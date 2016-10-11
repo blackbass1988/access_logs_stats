@@ -2,6 +2,8 @@ package input
 
 import (
 	"bufio"
+	"errors"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -38,8 +40,12 @@ func CreateFileReader(dsn string) (r *FileInputReader, err error) {
 
 func (r *FileInputReader) openFile(filename string) {
 	var err error
+
 	r.file, err = os.Open(filename)
 	r.fi, err = r.file.Stat()
+	if err != nil && !os.IsExist(err) {
+		err = errors.New(fmt.Sprintf("file \"%s\" not exists", filename))
+	}
 	r.fileReader = bufio.NewReader(r.file)
 	check(err)
 }

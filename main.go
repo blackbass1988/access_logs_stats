@@ -14,7 +14,7 @@ import (
 
 const (
 	PROG_NAME = "AccessLogsStats"
-	VERSION   = "0.5.0"
+	VERSION   = "0.5.1"
 )
 
 func PrintHello() {
@@ -45,6 +45,9 @@ func main() {
 	}
 
 	app, err := core.NewApp(config)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	if profile {
 		go codeProfile()

@@ -116,6 +116,11 @@ func (s *SubProcess) appendToOutput(field string, metric string) {
 		centFloat, err := strconv.ParseFloat(cent[1], 10)
 		check(err)
 		s.output.AddMessage(key, fmt.Sprintf("%.3f", s.getFloatData(field).Percentile(centFloat)))
+
+	case metric == "uniq":
+		s.output.AddMessage(key, fmt.Sprintf("%d", s.getUniqCnt(field)))
+	case metric == "uniq_ps":
+		s.output.AddMessage(key, fmt.Sprintf("%.3f", float64(s.getUniqCnt(field))/s.getPeriodInSeconds()))
 	case strings.Contains(metric, "cps_"):
 		metrics := strings.Split(metric, "_")
 		metric = metrics[1]
@@ -128,6 +133,17 @@ func (s *SubProcess) appendToOutput(field string, metric string) {
 	}
 }
 
+func (s *SubProcess) getUniqCnt(field string) uint64 {
+	var (
+		cnt uint64
+		ok  bool
+	)
+	cnt = 0
+	if _, ok = s.counts[field]; ok {
+		cnt = uint64(len(s.counts[field]))
+	}
+	return cnt
+}
 func (s *SubProcess) getFloatData(field string) *Float64Data {
 	//кешируем флоатдату
 	if _, ok := s.floatData[field]; !ok {

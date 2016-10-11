@@ -90,20 +90,24 @@ func NewConfig(filepath string) (config Config, err error) {
 
 		for _, filterItem := range f.Items {
 			for _, metric := range filterItem.Metrics {
-				//если метрика содержит cps_, значит она должна быть в counts
-				//иначе должна быть aggregates
 
-				if strings.Contains(metric, "cps_") && !config.Counts[filterItem.Field] {
-					err = errors.New(
-						fmt.Sprintf("field \"%s\" must in in \"counts\" section "+
-							"because you want metric \"%s\"",
-							filterItem.Field, metric))
-				} else if !strings.Contains(metric, "cps_") && !config.Aggregates[filterItem.Field] {
-					err = errors.New(
-						fmt.Sprintf("field \"%s\" must in in \"aggregates\" section"+
-							" because you want metric \"%s\"",
-							filterItem.Field, metric))
+				switch {
+				case metric == "min", metric == "max", metric == "len", metric == "avg", metric == "ips", strings.Contains(metric, "cent_"):
+					if !config.Aggregates[filterItem.Field] {
+						err = errors.New(
+							fmt.Sprintf("field \"%s\" must in in \"aggregates\" section"+
+								" because you want metric \"%s\"",
+								filterItem.Field, metric))
+					}
+				case metric == "uniq", metric == "uniq_ps", strings.Contains(metric, "cps_"):
+					if !config.Counts[filterItem.Field] {
+						err = errors.New(
+							fmt.Sprintf("field \"%s\" must in in \"counts\" section "+
+								"because you want metric \"%s\"",
+								filterItem.Field, metric))
+					}
 				}
+
 			}
 		}
 

@@ -53,7 +53,6 @@ func (a *App) openReader() (err error) {
 func (a *App) Start() {
 	var err error
 	a.init()
-
 	tick := time.Tick(a.config.Period)
 	log.Println("start a reading...")
 	err = a.openReader()
