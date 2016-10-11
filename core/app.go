@@ -20,8 +20,8 @@ var (
 )
 
 type Row struct {
-	fields map[string]string
-	raw    string
+	Fields map[string]string
+	Raw    string
 }
 
 type App struct {
@@ -102,7 +102,7 @@ func (a *App) processBuffer() {
 			check(err)
 		}
 
-		logRow, err := a.NewRow(rawString)
+		logRow, err := NewRow(rawString, a.config.Rex)
 		if err != nil && err == ERR_EMPTY_RESULT {
 			log.Println(err, rawString)
 			continue
@@ -116,25 +116,6 @@ func (a *App) processBuffer() {
 	go a.subProcessCollection.sendStats()
 	log.Println(lastString)
 	<-a.processBufferSync
-}
-
-func (a *App) NewRow(rawString string) (row *Row, err error) {
-
-	row = new(Row)
-	row.fields = make(map[string]string)
-	row.raw = rawString
-
-	matches := a.config.Rex.FindStringSubmatch(rawString)
-
-	if len(matches) == 0 {
-		return nil, ERR_EMPTY_RESULT
-	}
-
-	for i, name := range a.config.Rex.SubexpNames() {
-		row.fields[name] = matches[i]
-	}
-
-	return row, err
 }
 
 func NewApp(config Config) (app *App, err error) {

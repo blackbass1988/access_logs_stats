@@ -49,14 +49,14 @@ func (s *SubProcess) stringMatched(row *Row) bool {
 		return true
 	}
 
-	return s.filter.FilterRex.MatchString(row.raw)
+	return s.filter.FilterRex.MatchString(row.Raw)
 }
 
 func (s *SubProcess) appendIfOk(row *Row) (err error) {
 
 	if s.stringMatched(row) {
 
-		for field, val := range row.fields {
+		for field, val := range row.Fields {
 
 			if _, ok := s.config.Aggregates[field]; ok {
 				valFloat, err := strconv.ParseFloat(val, 10)
