@@ -111,6 +111,8 @@ func (s *SubProcess) appendToOutput(field string, metric string) {
 		s.output.AddMessage(key, fmt.Sprintf("%.3f", s.getFloatData(field).Avg()))
 	case metric == "sum":
 		s.output.AddMessage(key, fmt.Sprintf("%.3f", s.getFloatData(field).Sum()))
+	case metric == "sum_ps":
+		s.output.AddMessage(key, fmt.Sprintf("%.3f", s.getFloatData(field).Sum()/s.getPeriodInSeconds()))
 	case metric == "ips":
 		s.output.AddMessage(key, fmt.Sprintf("%.3f", s.getFloatData(field).ItemsPerSeconds(s.getPeriodInSeconds())))
 	case strings.Contains(metric, "cent_"):

@@ -93,7 +93,7 @@ func NewConfig(filepath string) (config Config, err error) {
 
 				switch {
 				case metric == "min", metric == "max", metric == "len", metric == "avg",
-					metric == "sum", metric == "ips", strings.Contains(metric, "cent_"):
+					metric == "sum", metric == "sum_ps", metric == "ips", strings.Contains(metric, "cent_"):
 
 					if !config.Aggregates[filterItem.Field] {
 						err = errors.New(
