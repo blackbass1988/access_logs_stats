@@ -45,6 +45,11 @@ func TestFloatData(t *testing.T) {
 		t.Errorf("incorrect Max(). must 3 but was %f", floatNumber.Max())
 	}
 
+
+	if floatNumber.Sum() != 6 {
+		t.Errorf("incorrect Max(). must 6 but was %f", floatNumber.Sum())
+	}
+
 }
 
 type lendivpurCase struct {

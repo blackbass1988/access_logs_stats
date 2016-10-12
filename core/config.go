@@ -92,7 +92,9 @@ func NewConfig(filepath string) (config Config, err error) {
 			for _, metric := range filterItem.Metrics {
 
 				switch {
-				case metric == "min", metric == "max", metric == "len", metric == "avg", metric == "ips", strings.Contains(metric, "cent_"):
+				case metric == "min", metric == "max", metric == "len", metric == "avg",
+					metric == "sum", metric == "ips", strings.Contains(metric, "cent_"):
+
 					if !config.Aggregates[filterItem.Field] {
 						err = errors.New(
 							fmt.Sprintf("field \"%s\" must in in \"aggregates\" section"+

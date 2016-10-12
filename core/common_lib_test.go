@@ -22,9 +22,9 @@ var tests = []testcase{
 		map[string]string{"code": "200", "time": "0.132"},
 	},
 	{
-		`.+HTTP/\d.?\d?\s(?P<code>\d+)[^"]+"[^"]*" "[^"]*" (?P<time>\d{1,}\.\d{3})`,
+		`.+HTTP/\d.?\d?\s(?P<code>\d+)\s(?P<bytes>\d+)[^"]+"[^"]*" "[^"]*" (?P<time>\d{1,}\.\d{3})`,
 		`Sep 19 20:22:41 node4.drom.ru nginx: s.auto.drom.ru s.drom.ru 85.26.241.25 - [2016-09-19T20:22:41+10:00] GET "/1/reviews/photos/mitsubishi/gto/gen2154x2_1519_0.jpeg" HTTP/1.1 200 98389 "http://www.drom.ru/reviews/mitsubishi/gto/" "Mozilla/5.0 (Linux; Android 5.0.2; SM-A300F Build/LRX22G) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.81 Mobile Safari/537.36" 47.400 722 "192.168.200.86:80" "0.000" MISS "-" b593b3b588365341b5554d0486c6b880 -`,
-		map[string]string{"code": "200", "time": "47.400"},
+		map[string]string{"code": "200", "time": "47.400", "bytes": "98389"},
 	},
 	{
 		`.+HTTP/\d.?\d?\s(?P<code>\d+)[^"]+"[^"]*" "[^"]*" (?P<time>\d{1,}\.\d{3})`,

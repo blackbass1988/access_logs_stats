@@ -53,6 +53,20 @@ func (a Float64Data) Percentile(cent float64) float64 {
 	return float64(slice[0])
 }
 
+func (a Float64Data) Sum() float64 {
+	var sum float64
+
+	if len(a) == 0 {
+		return 0
+	}
+
+	sum = 0
+	for _, v := range a {
+		sum += v
+	}
+	return sum
+}
+
 func (a Float64Data) ItemsPerSeconds(seconds float64) float64 {
 	return float64(len(a)) / seconds
 }
