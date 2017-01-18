@@ -101,7 +101,7 @@ func NewConfig(filepath string) (config Config, err error) {
 								" because you want metric \"%s\"",
 								filterItem.Field, metric))
 					}
-				case metric == "uniq", metric == "uniq_ps", strings.Contains(metric, "cps_"):
+				case metric == "uniq", metric == "uniq_ps", strings.Contains(metric, "cps_"), strings.Contains(metric, "percentage_"):
 					if !config.Counts[filterItem.Field] {
 						err = errors.New(
 							fmt.Sprintf("field \"%s\" must in in \"counts\" section "+

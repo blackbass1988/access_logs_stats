@@ -93,9 +93,10 @@ func (s *SubProcess) sendStats() (err error) {
 
 func (s *SubProcess) appendToOutput(field string, metric string) {
 	var (
-		cnt uint64
-		key string
-		ok  bool
+		cnt    uint64
+		key    string
+		ok     bool
+		result float64
 	)
 
 	key = fmt.Sprintf("%s_%v", field, metric)
@@ -134,7 +135,37 @@ func (s *SubProcess) appendToOutput(field string, metric string) {
 			cnt = 0
 		}
 		s.output.AddMessage(key, fmt.Sprintf("%.3f", float64(cnt)/s.getPeriodInSeconds()))
+	case strings.Contains(metric, "percentage_"):
+		metrics := strings.Split(metric, "_")
+		metric = metrics[1]
+
+		total := s.getTotalCountByField(field)
+
+		if cnt, ok = s.counts[field][metric]; ok && total > 0 {
+			result = 0
+		} else {
+			result = float64(cnt * 100 / total)
+		}
+
+		s.output.AddMessage(key, fmt.Sprintf("%.3f", result))
 	}
+}
+
+func (s *SubProcess) getTotalCountByField(field string) uint64 {
+	var (
+		ok  bool
+		cnt uint64
+	)
+	if _, ok = s.counts[field]; !ok {
+		return 0
+	}
+
+	cnt = 0
+	for _, c := range s.counts[field] {
+		cnt += c
+	}
+
+	return cnt
 }
 
 func (s *SubProcess) getUniqCnt(field string) uint64 {
