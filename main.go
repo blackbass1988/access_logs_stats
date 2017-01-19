@@ -12,13 +12,8 @@ import (
 	"time"
 )
 
-const (
-	PROG_NAME = "AccessLogsStats"
-	VERSION   = "0.5.2"
-)
-
 func PrintHello() {
-	log.Printf("%s ver.%s", PROG_NAME, VERSION)
+	log.Printf("%s ver.%s@%s", core.PROG_NAME, core.VERSION, core.BUILD_TIME)
 }
 
 func main() {

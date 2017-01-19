@@ -14,6 +14,10 @@ import (
 )
 
 var (
+	PROG_NAME  string = "AccessLogsStats"
+	VERSION    string = "dev"
+	BUILD_TIME string = "dev"
+
 	ERR_EMPTY_RESULT    error = errors.New("bad string or regular expression")
 	ERR_FILTERS_NOT_SET error = errors.New("filters not set")
 	ERR_OUTPUT_NOT_SET  error = errors.New("there are least one output must be specified. 0 found")
