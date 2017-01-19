@@ -141,9 +141,8 @@ func (s *SubProcess) appendToOutput(field string, metric string) {
 
 		total := s.getTotalCountByField(field)
 
+		result = 0
 		if cnt, ok = s.counts[field][metric]; ok && total > 0 {
-			result = 0
-		} else {
 			result = float64(cnt * 100 / total)
 		}
 

@@ -83,7 +83,7 @@ func TestConfig(t *testing.T) {
 		t.Error("first filter item must be code but was ", oneItem.Field)
 	}
 
-	if len(oneItem.Metrics) != 3 {
+	if len(oneItem.Metrics) != 4 {
 		t.Error("len(oneItem.Metrics) must be 3 but was ", len(oneItem.Metrics))
 	}
 

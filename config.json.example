@@ -11,7 +11,7 @@
       "items": [
         {
           "field": "code",
-          "metrics": ["cps_200", "cps_400", "cps_500"]
+          "metrics": ["cps_200", "cps_400", "cps_500", "percentage_200"]
         },
         {
           "field": "time",
