@@ -69,13 +69,21 @@ func (a *App) Start() {
 		a.ir.Close()
 	}()
 
-	go a.ir.ReadToBuffer()
+	if a.config.ExitAfterOneTick {
+		//if ExitAfterOneTick -> read until eof and process all buffer
+		a.ir.ReadToBuffer()
+		a.processBuffer()
 
-	for {
-		select {
-		case <-tick:
-			a.processBufferSync <- true
-			go a.processBuffer()
+	} else {
+		//read to buffer in background
+		go a.ir.ReadToBuffer()
+
+		for {
+			select {
+			case <-tick:
+				a.processBufferSync <- true
+				go a.processBuffer()
+			}
 		}
 	}
 }
@@ -123,10 +131,14 @@ func (a *App) processBuffer() {
 		a.senderCollection.appendData(logRow)
 		lastString = rawString
 	}
-
-	go a.senderCollection.sendStats()
 	log.Println(lastString)
-	<-a.processBufferSync
+
+	if a.config.ExitAfterOneTick {
+		a.senderCollection.sendStats()
+	} else {
+		go a.senderCollection.sendStats()
+		<-a.processBufferSync
+	}
 }
 
 func NewApp(config Config) (app *App, err error) {

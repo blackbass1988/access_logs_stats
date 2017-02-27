@@ -219,14 +219,12 @@ host - имя хоста, которым будет представляться
 todo
 -----------------
 
-сделать тесты для subprocess.go
+make english doc
 
-сделать нормальный парсер для сислогa-сервера
+make tests for sender 
 
-сделать conf.d/*.json для запуска пачки сервисов-считалок с одного бинарника
+make normal syslog parser
 
-new input: stdin
-variants
-input: stdin:nowait
-input: stdin:wait
+make conf.d/*.json for multiple instances of app
 
+make normal exit after one tick

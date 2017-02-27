@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 type Sender struct {
@@ -251,8 +252,13 @@ func (s *SenderCollection) appendData(row *Row) error {
 }
 
 func (s *SenderCollection) sendStats() {
-
+	var wg sync.WaitGroup
 	for _, proc := range s.procs {
-		go proc.sendStats()
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			proc.sendStats()
+		}()
 	}
+	wg.Wait()
 }
