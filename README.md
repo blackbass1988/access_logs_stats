@@ -224,3 +224,9 @@ todo
 сделать нормальный парсер для сислогa-сервера
 
 сделать conf.d/*.json для запуска пачки сервисов-считалок с одного бинарника
+
+new input: stdin
+variants
+input: stdin:nowait
+input: stdin:wait
+
