@@ -34,8 +34,8 @@ type App struct {
 	config Config
 	buffer []byte
 
-	subProcessCollection *SubProcessCollection
-	ir                   input.InputBufferedReader
+	senderCollection *SenderCollection
+	ir               input.InputBufferedReader
 
 	fileReader *bufio.Reader
 
@@ -48,8 +48,10 @@ func (a *App) openReader() (err error) {
 		a.ir, err = input.CreateFileReader(a.config.InputDsn)
 	} else if strings.HasPrefix(a.config.InputDsn, "syslog:") {
 		a.ir, err = input.CreateSyslogInputReader(a.config.InputDsn)
+	} else if strings.HasPrefix(a.config.InputDsn, "stdin:") {
+		a.ir, err = input.CreateStdinReader(a.config.InputDsn)
 	} else {
-		err = errors.New("unknown input type")
+		err = errors.New("unknown input type: " + a.config.InputDsn)
 	}
 	return err
 }
@@ -57,6 +59,7 @@ func (a *App) openReader() (err error) {
 func (a *App) Start() {
 	var err error
 	a.init()
+
 	tick := time.Tick(a.config.Period)
 	log.Println("start a reading...")
 	err = a.openReader()
@@ -77,10 +80,14 @@ func (a *App) Start() {
 	}
 }
 
+func (a *App) Stop() {
+	os.Exit(0)
+}
+
 func (a *App) init() {
 	a.processBufferSync = make(chan bool, 1)
 	a.buffer = []byte{}
-	a.subProcessCollection = NewSubProcessCollection(&a.config)
+	a.senderCollection = NewSenderCollection(&a.config)
 }
 
 func (a *App) processBuffer() {
@@ -96,7 +103,7 @@ func (a *App) processBuffer() {
 	byteReader := bytes.NewReader(buffer)
 	bufReader := bufio.NewReader(byteReader)
 
-	a.subProcessCollection.resetData()
+	a.senderCollection.resetData()
 
 	for {
 		rawString, err = bufReader.ReadString('\n')
@@ -113,11 +120,11 @@ func (a *App) processBuffer() {
 		}
 		check(err)
 
-		a.subProcessCollection.appendData(logRow)
+		a.senderCollection.appendData(logRow)
 		lastString = rawString
 	}
 
-	go a.subProcessCollection.sendStats()
+	go a.senderCollection.sendStats()
 	log.Println(lastString)
 	<-a.processBufferSync
 }

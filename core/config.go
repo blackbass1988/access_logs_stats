@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"regexp"
 	"strings"
 	"time"
@@ -28,6 +29,8 @@ type configJson struct {
 
 type Config struct {
 	InputDsn string
+
+	ExitAfterOneTick bool
 
 	Counts     map[string]bool
 	Aggregates map[string]bool
@@ -53,6 +56,12 @@ func NewConfig(filepath string) (config Config, err error) {
 	configJson := new(configJson)
 	config.Aggregates = make(map[string]bool)
 	config.Counts = make(map[string]bool)
+
+	//we need to lock file in processlist for restore by file descriptor if delete in runtime
+	_, err = os.Open(filepath)
+	if err != nil {
+		return config, err
+	}
 
 	bytes, err := ioutil.ReadFile(filepath)
 	if err != nil {

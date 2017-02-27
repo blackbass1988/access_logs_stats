@@ -18,14 +18,16 @@ func PrintHello() {
 
 func main() {
 	var (
-		fileconfig string
-		profile    bool
+		fileconfig       string
+		profile          bool
+		exitAfterOneTick bool
 	)
 
 	PrintHello()
 
 	flag.StringVar(&fileconfig, "c", "", "config path")
 	flag.BoolVar(&profile, "p", false, "enable profiling")
+	flag.BoolVar(&exitAfterOneTick, "one", false, "make one tick end exit")
 	flag.Parse()
 
 	if fileconfig == "" {
@@ -38,6 +40,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	config.ExitAfterOneTick = exitAfterOneTick
 
 	app, err := core.NewApp(config)
 	if err != nil {

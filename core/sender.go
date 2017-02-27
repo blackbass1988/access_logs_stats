@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-type SubProcess struct {
+type Sender struct {
 	//настройка конкретного фильтра
 	filter *Filter
 
@@ -35,14 +35,14 @@ type SubProcess struct {
 	counts map[string]map[string]uint64
 }
 
-func (s *SubProcess) resetData() {
+func (s *Sender) resetData() {
 	//locks?
 	s.floatsForAggregates = make(map[string][]float64)
 	s.floatData = make(map[string]*Float64Data)
 	s.counts = make(map[string]map[string]uint64)
 }
 
-func (s *SubProcess) stringMatched(row *Row) bool {
+func (s *Sender) stringMatched(row *Row) bool {
 
 	//micro optimization
 	if s.filter.Filter == ".+" || s.filter.Filter == ".*" {
@@ -52,7 +52,7 @@ func (s *SubProcess) stringMatched(row *Row) bool {
 	return s.filter.FilterRex.MatchString(row.Raw)
 }
 
-func (s *SubProcess) appendIfOk(row *Row) (err error) {
+func (s *Sender) appendIfOk(row *Row) (err error) {
 
 	if s.stringMatched(row) {
 
@@ -78,7 +78,7 @@ func (s *SubProcess) appendIfOk(row *Row) (err error) {
 	return err
 }
 
-func (s *SubProcess) sendStats() (err error) {
+func (s *Sender) sendStats() (err error) {
 
 	for _, metricsOfField := range s.filter.Items {
 
@@ -91,7 +91,7 @@ func (s *SubProcess) sendStats() (err error) {
 	return err
 }
 
-func (s *SubProcess) appendToOutput(field string, metric string) {
+func (s *Sender) appendToOutput(field string, metric string) {
 	var (
 		cnt    uint64
 		key    string
@@ -150,7 +150,7 @@ func (s *SubProcess) appendToOutput(field string, metric string) {
 	}
 }
 
-func (s *SubProcess) getTotalCountByField(field string) uint64 {
+func (s *Sender) getTotalCountByField(field string) uint64 {
 	var (
 		ok  bool
 		cnt uint64
@@ -167,7 +167,7 @@ func (s *SubProcess) getTotalCountByField(field string) uint64 {
 	return cnt
 }
 
-func (s *SubProcess) getUniqCnt(field string) uint64 {
+func (s *Sender) getUniqCnt(field string) uint64 {
 	var (
 		cnt uint64
 		ok  bool
@@ -178,7 +178,7 @@ func (s *SubProcess) getUniqCnt(field string) uint64 {
 	}
 	return cnt
 }
-func (s *SubProcess) getFloatData(field string) *Float64Data {
+func (s *Sender) getFloatData(field string) *Float64Data {
 	//кешируем флоатдату
 	if _, ok := s.floatData[field]; !ok {
 		f := Float64Data(s.floatsForAggregates[field])
@@ -188,42 +188,42 @@ func (s *SubProcess) getFloatData(field string) *Float64Data {
 	return s.floatData[field]
 }
 
-func (s *SubProcess) getPeriodInSeconds() float64 {
+func (s *Sender) getPeriodInSeconds() float64 {
 	if s.periodInSeconds == 0 {
 		s.periodInSeconds = s.config.Period.Seconds()
 	}
 	return s.periodInSeconds
 }
 
-func NewSubProcess(filter *Filter, config *Config) (*SubProcess, error) {
-	subprocess := new(SubProcess)
-	subprocess.filter = filter
-	subprocess.config = config
+func NewSender(filter *Filter, config *Config) (*Sender, error) {
+	sender := new(Sender)
+	sender.filter = filter
+	sender.config = config
 
-	subprocess.output = new(output.Output)
+	sender.output = new(output.Output)
 
 	if len(filter.Prefix) > 0 {
-		subprocess.output.SetPrefix(filter.Prefix)
+		sender.output.SetPrefix(filter.Prefix)
 	}
 
 	for _, s := range config.Outputs {
-		subprocess.output.Init(s.Type, s.Settings)
+		sender.output.Init(s.Type, s.Settings)
 	}
 
-	return subprocess, nil
+	return sender, nil
 }
 
-type SubProcessCollection struct {
-	procs  []*SubProcess
+type SenderCollection struct {
+	procs  []*Sender
 	config *Config
 }
 
-func NewSubProcessCollection(config *Config) *SubProcessCollection {
-	subProcesses := new(SubProcessCollection)
+func NewSenderCollection(config *Config) *SenderCollection {
+	subProcesses := new(SenderCollection)
 
-	processes := []*SubProcess{}
+	processes := []*Sender{}
 	for _, f := range config.Filters {
-		sp, err := NewSubProcess(f, config)
+		sp, err := NewSender(f, config)
 		check(err)
 		processes = append(processes, sp)
 	}
@@ -234,13 +234,13 @@ func NewSubProcessCollection(config *Config) *SubProcessCollection {
 	return subProcesses
 }
 
-func (s *SubProcessCollection) resetData() {
+func (s *SenderCollection) resetData() {
 	for _, proc := range s.procs {
 		proc.resetData()
 	}
 }
 
-func (s *SubProcessCollection) appendData(row *Row) error {
+func (s *SenderCollection) appendData(row *Row) error {
 	var err error
 
 	for _, proc := range s.procs {
@@ -250,7 +250,8 @@ func (s *SubProcessCollection) appendData(row *Row) error {
 	return err
 }
 
-func (s *SubProcessCollection) sendStats() {
+func (s *SenderCollection) sendStats() {
+
 	for _, proc := range s.procs {
 		go proc.sendStats()
 	}
