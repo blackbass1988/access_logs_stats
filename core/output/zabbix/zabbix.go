@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"net"
+	"os"
 )
 
 var (
@@ -105,6 +106,10 @@ func Send(messages []*output.Message) {
 func Init(params map[string]string) {
 
 	for k, v := range params {
+		if v == "${hostname}" {
+			v, _ = os.Hostname()
+		}
+
 		switch k {
 		case "zabbix_host":
 			z.zabbixHost = v

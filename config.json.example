@@ -30,7 +30,7 @@
       "settings": {
         "zabbix_host": "127.0.0.1",
         "zabbix_port": "1234",
-        "host": "localhost.localhost"
+        "host": "${host}"
       }
     }
   ]
