@@ -255,10 +255,10 @@ func (s *SenderCollection) sendStats() {
 	var wg sync.WaitGroup
 	for _, proc := range s.procs {
 		wg.Add(1)
-		go func() {
+		go func(proc *Sender) {
 			defer wg.Done()
 			proc.sendStats()
-		}()
+		}(proc)
 	}
 	wg.Wait()
 }
