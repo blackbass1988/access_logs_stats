@@ -1,5 +1,6 @@
-Access Logs Stats
-=================
+## Access Logs Stats
+
+[![Go Report Card](https://goreportcard.com/badge/blackbass1988/access_logs_stats)](https://goreportcard.com/report/github.com/blackbass1988/access_logs_stats)
 
 цель приложения - сделать штуку, которая могла бы обработать "очень много" access логов и построить по ним статистику
 
