@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-func PrintHello() {
+func printHello() {
 	log.Printf("%s ver.%s@%s", core.PROG_NAME, core.VERSION, core.BUILD_TIME)
 }
 
@@ -23,7 +23,7 @@ func main() {
 		exitAfterOneTick bool
 	)
 
-	PrintHello()
+	printHello()
 
 	flag.StringVar(&fileconfig, "c", "", "config path")
 	flag.BoolVar(&profile, "p", false, "enable profiling")
@@ -59,11 +59,11 @@ func codeProfile() {
 	tick1m := time.Tick(1 * time.Minute)
 	tick5s := time.Tick(5 * time.Second)
 
-	f_cpu_profiling, err := os.Create("profile.prof")
+	fCPUProfiling, err := os.Create("profile.prof")
 	if err != nil {
 		panic(err)
 	}
-	pprof.StartCPUProfile(f_cpu_profiling)
+	pprof.StartCPUProfile(fCPUProfiling)
 	defer func() {
 		pprof.StopCPUProfile()
 	}()
@@ -104,9 +104,9 @@ func codeProfile() {
 			log.Println("")
 
 		case <-tick1m:
-			var f_heap_profiling io.Writer
-			f_heap_profiling, _ = os.Create("profile_heap.prof")
-			pprof.WriteHeapProfile(f_heap_profiling)
+			var fHeapProfiling io.Writer
+			fHeapProfiling, _ = os.Create("profile_heap.prof")
+			pprof.WriteHeapProfile(fHeapProfiling)
 			log.Println("~ head saved")
 		}
 	}
