@@ -6,7 +6,8 @@ import (
 	"strings"
 )
 
-type InputBufferedReader interface {
+//BufferedReader describes interface of implementations
+type BufferedReader interface {
 	ReadToBuffer()
 	FlushBuffer() []byte
 	Close()
@@ -18,10 +19,11 @@ func check(err error) {
 	}
 }
 
-func GetFileReader(inputDsn string) (InputBufferedReader, error) {
+//GetFileReader is a "factory method"
+func GetFileReader(inputDsn string) (BufferedReader, error) {
 
 	var err error
-	var r InputBufferedReader
+	var r BufferedReader
 
 	if strings.HasPrefix(inputDsn, "file:") {
 		r, err = CreateFileReader(inputDsn)

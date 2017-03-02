@@ -9,7 +9,7 @@ import (
 )
 
 type StdInputReader struct {
-	InputBufferedReader
+	BufferedReader
 
 	reader *bufio.Reader
 	buffer []byte

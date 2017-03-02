@@ -13,7 +13,7 @@ import (
 )
 
 type FileInputReader struct {
-	InputBufferedReader
+	BufferedReader
 
 	file *os.File
 	fi   os.FileInfo

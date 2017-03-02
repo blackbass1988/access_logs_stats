@@ -18,7 +18,7 @@ var (
 )
 
 type SyslogInputReader struct {
-	InputBufferedReader
+	BufferedReader
 
 	mutex  sync.Mutex
 	buffer []byte

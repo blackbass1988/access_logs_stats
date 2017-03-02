@@ -41,7 +41,7 @@ type App struct {
 	buffer []byte
 
 	senderCollection *SenderCollection
-	ir               input.InputBufferedReader
+	ir               input.BufferedReader
 
 	fileReader *bufio.Reader
 
