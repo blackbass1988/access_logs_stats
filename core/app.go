@@ -8,7 +8,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"strings"
 	"sync"
 	"time"
 )
@@ -44,15 +43,7 @@ type App struct {
 }
 
 func (a *App) openReader() (err error) {
-	if strings.HasPrefix(a.config.InputDsn, "file:") {
-		a.ir, err = input.CreateFileReader(a.config.InputDsn)
-	} else if strings.HasPrefix(a.config.InputDsn, "syslog:") {
-		a.ir, err = input.CreateSyslogInputReader(a.config.InputDsn)
-	} else if strings.HasPrefix(a.config.InputDsn, "stdin:") {
-		a.ir, err = input.CreateStdinReader(a.config.InputDsn)
-	} else {
-		err = errors.New("unknown input type: " + a.config.InputDsn)
-	}
+	a.ir, err = input.GetFileReader(a.config.InputDsn)
 	return err
 }
 
@@ -70,7 +61,6 @@ func (a *App) Start() {
 	}()
 
 	if a.config.ExitAfterOneTick {
-		//if ExitAfterOneTick -> read until eof and process all buffer
 		a.ir.ReadToBuffer()
 		a.processBuffer()
 
