@@ -127,11 +127,11 @@ func NewConfig(filepath string) (config Config, err error) {
 	}
 
 	if len(config.Filters) == 0 {
-		err = ERR_FILTERS_NOT_SET
+		err = errFiltersNotSet
 	}
 
 	if len(config.Outputs) == 0 {
-		return config, ERR_OUTPUT_NOT_SET
+		return config, errOutputNotSet
 	}
 
 	return config, err

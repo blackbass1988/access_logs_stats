@@ -43,7 +43,7 @@ func (s *Sender) resetData() {
 	s.counts = make(map[string]map[string]uint64)
 }
 
-func (s *Sender) stringMatched(row *Row) bool {
+func (s *Sender) stringMatched(row *RowEntry) bool {
 
 	//micro optimization
 	if s.filter.Filter == ".+" || s.filter.Filter == ".*" {
@@ -53,7 +53,7 @@ func (s *Sender) stringMatched(row *Row) bool {
 	return s.filter.FilterRex.MatchString(row.Raw)
 }
 
-func (s *Sender) appendIfOk(row *Row) (err error) {
+func (s *Sender) appendIfOk(row *RowEntry) (err error) {
 
 	if s.stringMatched(row) {
 
@@ -241,7 +241,7 @@ func (s *SenderCollection) resetData() {
 	}
 }
 
-func (s *SenderCollection) appendData(row *Row) error {
+func (s *SenderCollection) appendData(row *RowEntry) error {
 	var err error
 
 	for _, proc := range s.procs {

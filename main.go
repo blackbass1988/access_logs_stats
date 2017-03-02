@@ -13,7 +13,7 @@ import (
 )
 
 func printHello() {
-	log.Printf("%s ver.%s@%s", core.PROG_NAME, core.VERSION, core.BUILD_TIME)
+	log.Printf("%s ver.%s@%s", core.ProgName, core.Version, core.BuildTime)
 }
 
 func main() {

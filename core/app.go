@@ -8,25 +8,32 @@ import (
 	"io"
 	"log"
 	"os"
+	"regexp"
 	"sync"
 	"time"
 )
 
 var (
-	PROG_NAME  string = "AccessLogsStats"
-	VERSION    string = "dev"
-	BUILD_TIME string = "dev"
 
-	ERR_EMPTY_RESULT    error = errors.New("bad string or regular expression")
-	ERR_FILTERS_NOT_SET error = errors.New("filters not set")
-	ERR_OUTPUT_NOT_SET  error = errors.New("there are least one output must be specified. 0 found")
+	//ProgName is a just name
+	ProgName = "AccessLogsStats"
+	//Version it is a version of application will be overridden on build
+	Version = "dev"
+	//BuildTime it is a build time of application will be overridden on build
+	BuildTime = "dev"
+
+	errEmptyResult   = errors.New("bad string or regular expression")
+	errFiltersNotSet = errors.New("filters not set")
+	errOutputNotSet  = errors.New("there are least one output must be specified. 0 found")
 )
 
-type Row struct {
+//RowEntry contains raw input string and parsed fields of it
+type RowEntry struct {
 	Fields map[string]string
 	Raw    string
 }
 
+//App is a main struct of application
 type App struct {
 	fi     os.FileInfo
 	file   *os.File
@@ -42,11 +49,34 @@ type App struct {
 	m                 sync.Mutex
 }
 
-func (a *App) openReader() (err error) {
-	a.ir, err = input.GetFileReader(a.config.InputDsn)
-	return err
+//NewApp creates new parser
+func NewApp(config Config) (app *App, err error) {
+	app = new(App)
+	app.config = config
+	return app, err
 }
 
+//NewRow create new rowEntry
+func NewRow(rawString string, rex *regexp.Regexp) (row *RowEntry, err error) {
+	row = new(RowEntry)
+	row.Fields = make(map[string]string)
+	row.Raw = rawString
+
+	matches := rex.FindStringSubmatch(rawString)
+
+	if len(matches) == 0 {
+		return nil, errEmptyResult
+	}
+
+	for i, name := range rex.SubexpNames() {
+		if len(name) > 0 {
+			row.Fields[name] = matches[i]
+		}
+	}
+	return row, err
+}
+
+//Start starts an app
 func (a *App) Start() {
 	var err error
 	a.init()
@@ -78,7 +108,12 @@ func (a *App) Start() {
 	}
 }
 
-func (a *App) Stop() {
+func (a *App) openReader() (err error) {
+	a.ir, err = input.GetFileReader(a.config.InputDsn)
+	return err
+}
+
+func (a *App) stop() {
 	os.Exit(0)
 }
 
@@ -112,7 +147,7 @@ func (a *App) processBuffer() {
 		}
 
 		logRow, err := NewRow(rawString, a.config.Rex)
-		if err != nil && err == ERR_EMPTY_RESULT {
+		if err != nil && err == errEmptyResult {
 			log.Println(err, rawString)
 			continue
 		}
@@ -129,10 +164,4 @@ func (a *App) processBuffer() {
 		go a.senderCollection.sendStats()
 		<-a.processBufferSync
 	}
-}
-
-func NewApp(config Config) (app *App, err error) {
-	app = new(App)
-	app.config = config
-	return app, err
 }
