@@ -50,9 +50,10 @@ func (s *Output) AddMessage(key string, value string) {
  */
 func (s *Output) Send() {
 
+	currentMessages := s.messages
 	for _, aOutput := range outputs {
 		if aOutput.enabled {
-			aOutput.send(s.messages)
+			go aOutput.send(currentMessages)
 		}
 	}
 	s.messages = []*Message{}

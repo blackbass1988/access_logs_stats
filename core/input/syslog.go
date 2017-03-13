@@ -7,7 +7,6 @@ import (
 	"log"
 	"net"
 	"regexp"
-	"sync"
 )
 
 const UDP_SAFE_PACK_SIZE = 2048
@@ -20,8 +19,8 @@ var (
 type SyslogInputReader struct {
 	BufferedReader
 
-	mutex  sync.Mutex
-	buffer []byte
+	chanLock chan bool
+	buffer   []byte
 
 	protocol    string
 	listen      string
@@ -40,6 +39,7 @@ func CreateSyslogInputReader(dsn string) (r *SyslogInputReader, err error) {
 	// syslog:tcp:binding_ip:binding_port/application
 
 	r = &SyslogInputReader{}
+	r.chanLock = make(chan bool, 1)
 	r.buffer = []byte{}
 	r.parser, err = NewSyslogParser()
 	check(err)
@@ -87,10 +87,10 @@ func (r *SyslogInputReader) readToBufferUDP() {
 }
 
 func (r *SyslogInputReader) FlushBuffer() []byte {
-	r.mutex.Lock()
+	r.chanLock <- true
 	buffer := r.buffer
 	r.buffer = []byte{}
-	r.mutex.Unlock()
+	<-r.chanLock
 	return buffer
 }
 
@@ -163,11 +163,11 @@ func (r *SyslogInputReader) handleConnectionUDP(conn net.Conn) {
 			log.Println(err)
 		}
 		bytesBuf := b[0:read]
-		r.mutex.Lock()
+		r.chanLock <- true
 		if r.appendToBuffer(bytesBuf) {
 			r.buffer = append(r.buffer, '\n')
 		}
-		r.mutex.Unlock()
+		<-r.chanLock
 		//log.Println(string(r.buffer))
 	}
 }
@@ -179,18 +179,18 @@ func (r *SyslogInputReader) handleConnectionTCP(conn net.Conn) {
 	for {
 		bytesBuf, err := buffer.ReadBytes('\n')
 		if err == io.EOF {
-			r.mutex.Lock()
+			r.chanLock <- true
 			if r.appendToBuffer(bytesBuf) {
 				r.buffer = append(r.buffer, '\n')
 			}
-			r.mutex.Unlock()
+			<-r.chanLock
 			break
 		} else if err != nil {
 			check(err)
 		}
-		r.mutex.Lock()
+		r.chanLock <- true
 		r.appendToBuffer(bytesBuf)
-		r.mutex.Unlock()
+		<-r.chanLock
 	}
 	//log.Println(string(r.buffer))
 }

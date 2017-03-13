@@ -34,13 +34,16 @@ type Sender struct {
 	//хранится по схеме поле.уник_значение.кол-во
 	//вывод происходит по схеме - кол-во в 1 секунду
 	counts map[string]map[string]uint64
+
+	chanLock chan bool
 }
 
 func (s *Sender) resetData() {
-	//locks?
+	s.chanLock <- true
 	s.floatsForAggregates = make(map[string][]float64)
 	s.floatData = make(map[string]*Float64Data)
 	s.counts = make(map[string]map[string]uint64)
+	<-s.chanLock
 }
 
 func (s *Sender) stringMatched(row *RowEntry) bool {
@@ -81,13 +84,15 @@ func (s *Sender) appendIfOk(row *RowEntry) (err error) {
 
 func (s *Sender) sendStats() (err error) {
 
+	s.chanLock <- true
 	for _, metricsOfField := range s.filter.Items {
 
 		for _, metric := range metricsOfField.Metrics {
 			s.appendToOutput(metricsOfField.Field, metric)
 		}
 	}
-	s.output.Send()
+	<-s.chanLock
+	go s.output.Send()
 
 	return err
 }
@@ -210,6 +215,7 @@ func NewSender(filter *Filter, config *Config) (*Sender, error) {
 	sender := new(Sender)
 	sender.filter = filter
 	sender.config = config
+	sender.chanLock = make(chan bool, 1)
 
 	sender.output = new(output.Output)
 
@@ -251,6 +257,7 @@ func (s *SenderCollection) resetData() {
 	}
 }
 
+//appendData добавляет RowEntry к каждому отдельному инстансу фильтра из конфига
 func (s *SenderCollection) appendData(row *RowEntry) error {
 	var err error
 

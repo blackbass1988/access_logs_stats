@@ -9,7 +9,8 @@ VERSION=0.5.5
 BUILD_TIME=`date +%FT%T%z`
 
 # Setup the -ldflags option for go build here, interpolate the variable values
-LDFLAGS=-s -w -X ${PACKAGE}/core.Version=${VERSION} -X ${PACKAGE}/core.BuildTime=${BUILD_TIME}
+#LDFLAGS=-s -w -X ${PACKAGE}/core.Version=${VERSION} -X ${PACKAGE}/core.BuildTime=${BUILD_TIME}
+LDFLAGS=-X ${PACKAGE}/core.Version=${VERSION} -X ${PACKAGE}/core.BuildTime=${BUILD_TIME}
 
 DEBUG= -X github.com/blackbass1988/access_logs_stats/core/debug=1
 

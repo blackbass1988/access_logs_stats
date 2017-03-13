@@ -8,7 +8,6 @@ import (
 	"log"
 	"os"
 	"strings"
-	"sync"
 	"time"
 )
 
@@ -20,7 +19,7 @@ type FileInputReader struct {
 
 	fileReader *bufio.Reader
 
-	mutex sync.Mutex
+	chanLock chan bool
 
 	buffer []byte
 }
@@ -29,6 +28,7 @@ func CreateFileReader(dsn string) (r *FileInputReader, err error) {
 	filename := strings.Replace(dsn, "file:", "", 1)
 
 	r = &FileInputReader{}
+	r.chanLock = make(chan bool, 1)
 	r.buffer = []byte{}
 	r.openFile(filename)
 	r.file.Seek(0, 2)
@@ -59,11 +59,10 @@ func (r *FileInputReader) checkFile() {
 			check(err)
 			if !os.SameFile(fi, r.fi) {
 				log.Println("reopen input file")
-				r.mutex.Lock()
+				r.chanLock <- true
 				r.file.Close()
 				r.openFile(r.file.Name())
-				r.mutex.Unlock()
-
+				<-r.chanLock
 			}
 		}
 	}
@@ -76,25 +75,25 @@ func (r *FileInputReader) Close() {
 func (r *FileInputReader) ReadToBuffer() {
 	log.Println("reading...")
 	for {
-		r.mutex.Lock()
+		r.chanLock <- true
 		bytesBuf, err := r.fileReader.ReadBytes('\n')
-		r.mutex.Unlock()
+		<-r.chanLock
 		if err == io.EOF {
 			time.Sleep(10 * time.Millisecond)
 			continue
 		} else if err != nil {
 			check(err)
 		}
-		r.mutex.Lock()
+		r.chanLock <- true
 		r.buffer = append(r.buffer, bytesBuf...)
-		r.mutex.Unlock()
+		<-r.chanLock
 	}
 }
 
 func (r *FileInputReader) FlushBuffer() []byte {
-	r.mutex.Lock()
+	r.chanLock <- true
 	buffer := r.buffer
 	r.buffer = []byte{}
-	r.mutex.Unlock()
+	<-r.chanLock
 	return buffer
 }

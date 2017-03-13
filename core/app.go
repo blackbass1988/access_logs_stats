@@ -9,7 +9,6 @@ import (
 	"log"
 	"os"
 	"regexp"
-	"sync"
 	"time"
 )
 
@@ -46,7 +45,7 @@ type App struct {
 	fileReader *bufio.Reader
 
 	processBufferSync chan bool
-	m                 sync.Mutex
+	m                 chan bool
 }
 
 //NewApp creates new parser
@@ -120,6 +119,7 @@ func (a *App) stop() {
 
 func (a *App) init() {
 	a.processBufferSync = make(chan bool, 1)
+	a.m = make(chan bool, 1)
 	a.buffer = []byte{}
 	a.senderCollection = NewSenderCollection(&a.config)
 }
@@ -131,9 +131,9 @@ func (a *App) processBuffer() {
 		err        error
 		lastString string
 	)
-	a.m.Lock()
+	a.m <- true
 	buffer := a.ir.FlushBuffer()
-	a.m.Unlock()
+	<-a.m
 	byteReader := bytes.NewReader(buffer)
 	bufReader := bufio.NewReader(byteReader)
 
@@ -159,7 +159,7 @@ func (a *App) processBuffer() {
 	}
 	log.Println(lastString)
 
-	a.senderCollection.sendStats()
+	go a.senderCollection.sendStats()
 	<-a.processBufferSync
 
 }
