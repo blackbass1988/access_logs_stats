@@ -94,10 +94,10 @@ func (s *Sender) sendStats() (err error) {
 
 func (s *Sender) appendToOutput(field string, metric string) {
 	var (
-		cnt    uint64
-		key    string
-		ok     bool
-		result float64
+		cnt             uint64
+		key             string
+		ok              bool
+		result          float64
 		periodInSeconds float64
 	)
 
@@ -121,7 +121,7 @@ func (s *Sender) appendToOutput(field string, metric string) {
 		if periodInSeconds == 0 {
 			result = 0
 		} else {
-			result = s.getFloatData(field).Sum()/s.getPeriodInSeconds()
+			result = s.getFloatData(field).Sum() / s.getPeriodInSeconds()
 		}
 
 		s.output.AddMessage(key, fmt.Sprintf("%.3f", result))
