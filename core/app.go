@@ -92,6 +92,7 @@ func (a *App) Start() {
 
 	if a.config.ExitAfterOneTick {
 		a.ir.ReadToBuffer()
+		a.processBufferSync <- true
 		a.processBuffer()
 
 	} else {
@@ -158,10 +159,7 @@ func (a *App) processBuffer() {
 	}
 	log.Println(lastString)
 
-	if a.config.ExitAfterOneTick {
-		a.senderCollection.sendStats()
-	} else {
-		go a.senderCollection.sendStats()
-		<-a.processBufferSync
-	}
+	a.senderCollection.sendStats()
+	<-a.processBufferSync
+
 }
