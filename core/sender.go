@@ -98,6 +98,7 @@ func (s *Sender) appendToOutput(field string, metric string) {
 		key    string
 		ok     bool
 		result float64
+		periodInSeconds float64
 	)
 
 	key = fmt.Sprintf("%s_%v", field, metric)
@@ -114,7 +115,16 @@ func (s *Sender) appendToOutput(field string, metric string) {
 	case metric == "sum":
 		s.output.AddMessage(key, fmt.Sprintf("%.3f", s.getFloatData(field).Sum()))
 	case metric == "sum_ps":
-		s.output.AddMessage(key, fmt.Sprintf("%.3f", s.getFloatData(field).Sum()/s.getPeriodInSeconds()))
+
+		result := s.getFloatData(field).Sum()
+		periodInSeconds = s.getPeriodInSeconds()
+		if periodInSeconds == 0 {
+			result = 0
+		} else {
+			result = s.getFloatData(field).Sum()/s.getPeriodInSeconds()
+		}
+
+		s.output.AddMessage(key, fmt.Sprintf("%.3f", result))
 	case metric == "ips":
 		s.output.AddMessage(key, fmt.Sprintf("%.3f", s.getFloatData(field).ItemsPerSeconds(s.getPeriodInSeconds())))
 	case strings.Contains(metric, "cent_"):
