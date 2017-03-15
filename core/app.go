@@ -45,7 +45,6 @@ type App struct {
 	fileReader *bufio.Reader
 
 	processBufferSync chan bool
-	m                 chan bool
 }
 
 //NewApp creates new parser
@@ -119,7 +118,6 @@ func (a *App) stop() {
 
 func (a *App) init() {
 	a.processBufferSync = make(chan bool, 1)
-	a.m = make(chan bool, 1)
 	a.buffer = []byte{}
 	a.senderCollection = NewSenderCollection(&a.config)
 }
@@ -131,13 +129,20 @@ func (a *App) processBuffer() {
 		err        error
 		lastString string
 	)
-	a.m <- true
+	log.Println("[processBuffer] start")
+
 	buffer := a.ir.FlushBuffer()
-	<-a.m
+
+	<-a.processBufferSync
+
+	log.Println("[processBuffer] buffer read done")
+
 	byteReader := bytes.NewReader(buffer)
 	bufReader := bufio.NewReader(byteReader)
 
 	a.senderCollection.resetData()
+
+	log.Println("[processBuffer] resetData")
 
 	for {
 		rawString, err = bufReader.ReadString('\n')
@@ -157,9 +162,9 @@ func (a *App) processBuffer() {
 		a.senderCollection.appendData(logRow)
 		lastString = rawString
 	}
+	log.Println("[processBuffer] buffer append done")
 	log.Println(lastString)
 
 	go a.senderCollection.sendStats()
-	<-a.processBufferSync
 
 }
