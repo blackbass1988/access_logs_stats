@@ -224,6 +224,8 @@ func NewSender(filter *Filter, config *Config) (*Sender, error) {
 	sender.filter = filter
 	sender.config = config
 	sender.chanGlobalLock = make(chan bool, 1)
+	sender.chanWriteFloatAggrLock = make(chan bool, 1)
+	sender.chanWriteCountsLock = make(chan bool, 1)
 
 	sender.output = new(output.Output)
 
