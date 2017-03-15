@@ -238,3 +238,5 @@ make normal syslog parser
 make conf.d/*.json for multiple instances of app
 
 make normal exit after one tick
+
+todo write data in appendIfOk via channel

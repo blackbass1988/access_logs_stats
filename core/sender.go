@@ -35,15 +35,17 @@ type Sender struct {
 	//вывод происходит по схеме - кол-во в 1 секунду
 	counts map[string]map[string]uint64
 
-	chanLock chan bool
+	chanGlobalLock         chan bool
+	chanWriteFloatAggrLock chan bool
+	chanWriteCountsLock    chan bool
 }
 
 func (s *Sender) resetData() {
-	s.chanLock <- true
+	s.chanGlobalLock <- true
 	s.floatsForAggregates = make(map[string][]float64)
 	s.floatData = make(map[string]*Float64Data)
 	s.counts = make(map[string]map[string]uint64)
-	<-s.chanLock
+	<-s.chanGlobalLock
 }
 
 func (s *Sender) stringMatched(row *RowEntry) bool {
@@ -58,6 +60,8 @@ func (s *Sender) stringMatched(row *RowEntry) bool {
 
 func (s *Sender) appendIfOk(row *RowEntry) (err error) {
 
+	//todo write data via channel
+
 	if s.stringMatched(row) {
 
 		for field, val := range row.Fields {
@@ -65,16 +69,20 @@ func (s *Sender) appendIfOk(row *RowEntry) (err error) {
 			if _, ok := s.config.Aggregates[field]; ok {
 				valFloat, err := strconv.ParseFloat(val, 10)
 				check(err)
+				s.chanWriteFloatAggrLock <- true
 				s.floatsForAggregates[field] = append(s.floatsForAggregates[field], valFloat)
+				<-s.chanWriteFloatAggrLock
 			}
 
 			//в конфиге указано поле, как поле, по которому считаются
 			// суммы по уникальным значениям
 			if _, ok := s.config.Counts[field]; ok {
+				s.chanWriteCountsLock <- true
 				if s.counts[field] == nil {
 					s.counts[field] = make(map[string]uint64)
 				}
 				s.counts[field][val]++
+				<-s.chanWriteCountsLock
 			}
 		}
 	}
@@ -84,14 +92,14 @@ func (s *Sender) appendIfOk(row *RowEntry) (err error) {
 
 func (s *Sender) sendStats() (err error) {
 
-	s.chanLock <- true
+	s.chanGlobalLock <- true
 	for _, metricsOfField := range s.filter.Items {
 
 		for _, metric := range metricsOfField.Metrics {
 			s.appendToOutput(metricsOfField.Field, metric)
 		}
 	}
-	<-s.chanLock
+	<-s.chanGlobalLock
 	go s.output.Send()
 
 	return err
@@ -215,7 +223,7 @@ func NewSender(filter *Filter, config *Config) (*Sender, error) {
 	sender := new(Sender)
 	sender.filter = filter
 	sender.config = config
-	sender.chanLock = make(chan bool, 1)
+	sender.chanGlobalLock = make(chan bool, 1)
 
 	sender.output = new(output.Output)
 
@@ -262,7 +270,7 @@ func (s *SenderCollection) appendData(row *RowEntry) error {
 	var err error
 
 	for _, proc := range s.procs {
-		proc.appendIfOk(row)
+		go proc.appendIfOk(row)
 	}
 
 	return err
