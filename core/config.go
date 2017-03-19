@@ -41,17 +41,6 @@ type Config struct {
 	Filters []*Filter
 }
 
-type Filter struct {
-	Filter string `json:"filter"`
-	Prefix string `json:"prefix"`
-	Items  []struct {
-		Field   string   `json:"field"`
-		Metrics []string `json:"metrics"`
-	} `json:"items"`
-
-	FilterRex *regexp.Regexp
-}
-
 func NewConfig(filepath string) (config Config, err error) {
 	configJson := new(configJson)
 	config.Aggregates = make(map[string]bool)
@@ -95,7 +84,7 @@ func NewConfig(filepath string) (config Config, err error) {
 	}
 
 	for _, f := range configJson.Filters {
-		f.FilterRex, err = regexp.Compile(f.Filter)
+		//f.FilterRex, err = regexp.Compile(f.Matcher)
 
 		for _, filterItem := range f.Items {
 			for _, metric := range filterItem.Metrics {

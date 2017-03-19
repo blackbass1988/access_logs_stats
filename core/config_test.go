@@ -11,8 +11,7 @@ func TestConfig(t *testing.T) {
 	config, err := core.NewConfig(filepath)
 
 	if err != nil {
-		t.Error(err)
-		t.FailNow()
+		t.Fatal(err)
 	}
 
 	if config.InputDsn != "file:foo.txt" {
@@ -66,8 +65,8 @@ func TestConfig(t *testing.T) {
 
 	f := config.Filters[0]
 
-	if f.Filter != ".+" {
-		t.Error("filter. Expected .+ . Actual ", f.Filter)
+	if f.Matcher.String() != ".+" {
+		t.Errorf("filter. Expected [.+] . Actual [%s]", f.Matcher)
 	}
 
 	if f.Prefix != "prefix2_" {

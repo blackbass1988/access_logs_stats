@@ -48,21 +48,11 @@ func (s *Sender) resetData() {
 	<-s.chanGlobalLock
 }
 
-func (s *Sender) stringMatched(row *RowEntry) bool {
-
-	//micro optimization
-	if s.filter.Filter == ".+" || s.filter.Filter == ".*" {
-		return true
-	}
-
-	return s.filter.FilterRex.MatchString(row.Raw)
-}
-
 func (s *Sender) appendIfOk(row *RowEntry) (err error) {
 
 	//todo write data via channel
 
-	if s.stringMatched(row) {
+	if s.filter.MatchString(row.Raw) {
 
 		for field, val := range row.Fields {
 
