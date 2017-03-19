@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-var regularExpressionRex = regexp.MustCompile(`[\[\]{}+\-*\\()]`)
+var regularExpressionRex = regexp.MustCompile(`[\[\]{}+*\\()]`)
 
 type Filter struct {
 	Matcher *NativeMatcher `json:"filter"`
