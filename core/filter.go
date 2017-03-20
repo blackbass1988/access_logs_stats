@@ -3,6 +3,7 @@ package core
 import (
 	"regexp"
 	"strings"
+	"log"
 )
 
 var regularExpressionRex = regexp.MustCompile(`[\[\]{}+*\\()]`)
@@ -57,9 +58,11 @@ func newNativeMatcher(str string) (NativeMatcher, error) {
 
 	if regularExpressionRex.MatchString(str) {
 		m.isRegex = true
+		log.Printf("filter [%s] was recognized as regular expersion\n", str)
 		m.filterRex, err = regexp.Compile(str)
+	} else {
+		log.Printf("filter [%s] was recognized as regular string\n", str)
 	}
-
 	return m, err
 }
 
