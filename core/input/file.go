@@ -51,19 +51,27 @@ func (r *FileInputReader) openFile(filename string) {
 }
 
 func (r *FileInputReader) checkFile() {
+	var prevSize int64
+	prevSize = -1
 	tick1s := time.Tick(1 * time.Second)
 	for {
 		select {
 		case <-tick1s:
 			fi, err := os.Stat(r.file.Name())
 			check(err)
-			if !os.SameFile(fi, r.fi) {
+
+			if prevSize == -1 {
+				prevSize = fi.Size()
+			}
+
+			if !os.SameFile(fi, r.fi) || prevSize > fi.Size() {
 				log.Println("reopen input file")
 				r.chanLock <- true
 				r.file.Close()
 				r.openFile(r.file.Name())
 				<-r.chanLock
 			}
+			prevSize = fi.Size()
 		}
 	}
 }
