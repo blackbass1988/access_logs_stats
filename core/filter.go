@@ -1,9 +1,9 @@
 package core
 
 import (
+	"log"
 	"regexp"
 	"strings"
-	"log"
 )
 
 var regularExpressionRex = regexp.MustCompile(`[\[\]{}+*\\()]`)
