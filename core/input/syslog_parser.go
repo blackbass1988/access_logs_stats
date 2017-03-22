@@ -5,7 +5,7 @@ import (
 	"regexp"
 )
 
-//todo make normal parser
+//todo make normal parser. default regexp is very slow
 type syslogMessage struct {
 	Priority    string
 	Date        string
@@ -16,7 +16,7 @@ type syslogMessage struct {
 
 var UNKNOWN_INPUT_STRING_FORMAT = errors.New("UNKNOWN_INPUT_STRING_FORMAT")
 
-func NewSyslogParser() (p *syslogParser, err error) {
+func newSyslogParser() (p *syslogParser, err error) {
 	p = new(syslogParser)
 	p.reg1, err = regexp.Compile(`<(\d+)>(\S+\s+\w+\s+\S+)\s+(\S+)\s+(\w+):\s*(.+)`)
 	if err != nil {
@@ -32,7 +32,7 @@ type syslogParser struct {
 	reg2 *regexp.Regexp
 }
 
-func (s *syslogParser) ParseSyslogMsg(str string) (m syslogMessage, err error) {
+func (s *syslogParser) parseSyslogMsg(str string) (m syslogMessage, err error) {
 	var matches []string
 
 	//examples of syslog message

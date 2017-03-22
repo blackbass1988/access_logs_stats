@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -19,7 +20,7 @@ type FileInputReader struct {
 
 	fileReader *bufio.Reader
 
-	chanLock chan bool
+	m sync.Mutex
 
 	buffer []byte
 }
@@ -28,7 +29,6 @@ func CreateFileReader(dsn string) (r *FileInputReader, err error) {
 	filename := strings.Replace(dsn, "file:", "", 1)
 
 	r = &FileInputReader{}
-	r.chanLock = make(chan bool, 1)
 	r.buffer = []byte{}
 	r.openFile(filename)
 	r.file.Seek(0, 2)
@@ -51,19 +51,27 @@ func (r *FileInputReader) openFile(filename string) {
 }
 
 func (r *FileInputReader) checkFile() {
+	var prevSize int64
+	prevSize = -1
 	tick1s := time.Tick(1 * time.Second)
 	for {
 		select {
 		case <-tick1s:
 			fi, err := os.Stat(r.file.Name())
 			check(err)
-			if !os.SameFile(fi, r.fi) {
+
+			if prevSize == -1 {
+				prevSize = fi.Size()
+			}
+
+			if !os.SameFile(fi, r.fi) || prevSize > fi.Size() {
 				log.Println("reopen input file")
-				r.chanLock <- true
+				r.m.Lock()
 				r.file.Close()
 				r.openFile(r.file.Name())
-				<-r.chanLock
+				r.m.Unlock()
 			}
+			prevSize = fi.Size()
 		}
 	}
 }
@@ -75,25 +83,25 @@ func (r *FileInputReader) Close() {
 func (r *FileInputReader) ReadToBuffer() {
 	log.Println("reading...")
 	for {
-		r.chanLock <- true
+		r.m.Lock()
 		bytesBuf, err := r.fileReader.ReadBytes('\n')
-		<-r.chanLock
+		r.m.Unlock()
 		if err == io.EOF {
 			time.Sleep(10 * time.Millisecond)
 			continue
 		} else if err != nil {
 			check(err)
 		}
-		r.chanLock <- true
+		r.m.Lock()
 		r.buffer = append(r.buffer, bytesBuf...)
-		<-r.chanLock
+		r.m.Unlock()
 	}
 }
 
 func (r *FileInputReader) FlushBuffer() []byte {
-	r.chanLock <- true
+	r.m.Lock()
 	buffer := r.buffer
 	r.buffer = []byte{}
-	<-r.chanLock
+	r.m.Unlock()
 	return buffer
 }

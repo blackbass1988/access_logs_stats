@@ -14,6 +14,7 @@ func (c *console) send(key string, value string) {
 	log.Printf("%s = %s\n", key, value)
 }
 
+//Send sends messages to console
 func Send(messages []*output.Message) {
 
 	for _, message := range messages {
@@ -21,7 +22,7 @@ func Send(messages []*output.Message) {
 	}
 
 }
-
+//Init initializes console sender
 func Init(params map[string]string) {
 	//nothing to do?
 }

@@ -5,7 +5,7 @@ PACKAGE=github.com/blackbass1988/access_logs_stats
 
 
 # These are the values we want to pass for Version and BuildTime
-VERSION=0.5.6
+VERSION=0.6
 BUILD_TIME=`date +%FT%T%z`
 
 # Setup the -ldflags option for go build here, interpolate the variable values
