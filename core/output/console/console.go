@@ -22,6 +22,7 @@ func Send(messages []*output.Message) {
 	}
 
 }
+
 //Init initializes console sender
 func Init(params map[string]string) {
 	//nothing to do?
