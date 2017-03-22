@@ -82,12 +82,6 @@ func (r *FileInputReader) Close() {
 
 func (r *FileInputReader) ReadToBuffer() {
 	log.Println("reading...")
-	buffChan := make(chan []byte)
-	go r.readToBuffer(buffChan)
-	go r.writeToBuffer(buffChan)
-}
-
-func (r *FileInputReader) readToBuffer(buffChan chan<- []byte) {
 	for {
 		r.chanLock <- true
 		bytesBuf, err := r.fileReader.ReadBytes('\n')
@@ -98,13 +92,9 @@ func (r *FileInputReader) readToBuffer(buffChan chan<- []byte) {
 		} else if err != nil {
 			check(err)
 		}
-		buffChan <- bytesBuf
-	}
-}
-
-func (r *FileInputReader) writeToBuffer(buffChan <-chan []byte) {
-	for {
-		r.buffer = append(r.buffer, <-buffChan...)
+		r.chanLock <- true
+		r.buffer = append(r.buffer, bytesBuf...)
+		<-r.chanLock
 	}
 }
 
