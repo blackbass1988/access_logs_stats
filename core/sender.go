@@ -12,7 +12,6 @@ import (
 )
 
 type Sender struct {
-	//настройка конкретного фильтра
 	filter *Filter
 
 	//ссылка на конфиг приложения
@@ -35,22 +34,20 @@ type Sender struct {
 	//вывод происходит по схеме - кол-во в 1 секунду
 	counts map[string]map[string]uint64
 
-	chanGlobalLock         chan bool
-	chanWriteFloatAggrLock chan bool
-	chanWriteCountsLock    chan bool
+	globalLock         sync.Mutex
+	writeFloatAggrLock sync.Mutex
+	writeCountsLock    sync.Mutex
 }
 
 func (s *Sender) resetData() {
-	s.chanGlobalLock <- true
+	s.globalLock.Lock()
 	s.floatsForAggregates = make(map[string][]float64)
 	s.floatData = make(map[string]*Float64Data)
 	s.counts = make(map[string]map[string]uint64)
-	<-s.chanGlobalLock
+	s.globalLock.Unlock()
 }
 
 func (s *Sender) appendIfOk(row *RowEntry) (err error) {
-
-	//todo write data via channel
 
 	if s.filter.MatchString(row.Raw) {
 
@@ -59,20 +56,21 @@ func (s *Sender) appendIfOk(row *RowEntry) (err error) {
 			if _, ok := s.config.Aggregates[field]; ok {
 				valFloat, err := strconv.ParseFloat(val, 10)
 				check(err)
-				s.chanWriteFloatAggrLock <- true
+				s.writeFloatAggrLock.Lock()
 				s.floatsForAggregates[field] = append(s.floatsForAggregates[field], valFloat)
-				<-s.chanWriteFloatAggrLock
+				s.writeFloatAggrLock.Unlock()
 			}
 
 			//в конфиге указано поле, как поле, по которому считаются
 			// суммы по уникальным значениям
 			if _, ok := s.config.Counts[field]; ok {
-				s.chanWriteCountsLock <- true
+				s.writeCountsLock.Lock()
 				if s.counts[field] == nil {
 					s.counts[field] = make(map[string]uint64)
 				}
 				s.counts[field][val]++
-				<-s.chanWriteCountsLock
+				s.writeCountsLock.Unlock()
+
 			}
 		}
 	}
@@ -82,14 +80,14 @@ func (s *Sender) appendIfOk(row *RowEntry) (err error) {
 
 func (s *Sender) sendStats() (err error) {
 
-	s.chanGlobalLock <- true
+	s.globalLock.Lock()
 	for _, metricsOfField := range s.filter.Items {
 
 		for _, metric := range metricsOfField.Metrics {
 			s.appendToOutput(metricsOfField.Field, metric)
 		}
 	}
-	<-s.chanGlobalLock
+	s.globalLock.Unlock()
 	go s.output.Send()
 
 	return err
@@ -209,13 +207,11 @@ func (s *Sender) getPeriodInSeconds() float64 {
 	return s.periodInSeconds
 }
 
+//NewSender create new sender
 func NewSender(filter *Filter, config *Config) (*Sender, error) {
 	sender := new(Sender)
 	sender.filter = filter
 	sender.config = config
-	sender.chanGlobalLock = make(chan bool, 1)
-	sender.chanWriteFloatAggrLock = make(chan bool, 1)
-	sender.chanWriteCountsLock = make(chan bool, 1)
 
 	sender.output = new(output.Output)
 
@@ -235,6 +231,7 @@ type SenderCollection struct {
 	config *Config
 }
 
+//NewSenderCollection create SenderCollection of Senders
 func NewSenderCollection(config *Config) *SenderCollection {
 	subProcesses := new(SenderCollection)
 
@@ -257,7 +254,7 @@ func (s *SenderCollection) resetData() {
 	}
 }
 
-//appendData добавляет RowEntry к каждому отдельному инстансу фильтра из конфига
+//appendData appends RowEntry to every filter instance from config
 func (s *SenderCollection) appendData(row *RowEntry) error {
 	var err error
 

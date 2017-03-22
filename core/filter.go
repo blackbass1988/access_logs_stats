@@ -1,15 +1,16 @@
 package core
 
 import (
+	"log"
 	"regexp"
 	"strings"
-	"log"
 )
 
 var regularExpressionRex = regexp.MustCompile(`[\[\]{}+*\\()]`)
 
+//Filter matching input string
 type Filter struct {
-	Matcher *NativeMatcher `json:"filter"`
+	Matcher *nativeMatcher `json:"filter"`
 	Prefix  string         `json:"prefix"`
 	Items   []struct {
 		Field   string   `json:"field"`
@@ -17,23 +18,24 @@ type Filter struct {
 	} `json:"items"`
 }
 
+//MatchString matches a input string
 func (f *Filter) MatchString(str string) bool {
 	return f.Matcher.MatchString(str)
 }
 
-type Matcher interface {
+type matcher interface {
 	MatchString(str string) bool
 	String() string
 }
 
-type NativeMatcher struct {
-	Matcher
+type nativeMatcher struct {
+	matcher
 	raw       string
 	isRegex   bool
 	filterRex *regexp.Regexp
 }
 
-func (m *NativeMatcher) MatchString(str string) bool {
+func (m *nativeMatcher) MatchString(str string) bool {
 
 	//micro optimization
 	if m.String() == ".+" || m.String() == ".*" {
@@ -47,13 +49,13 @@ func (m *NativeMatcher) MatchString(str string) bool {
 	}
 }
 
-func (m *NativeMatcher) String() string {
+func (m *nativeMatcher) String() string {
 	return m.raw
 }
 
-func newNativeMatcher(str string) (NativeMatcher, error) {
+func newNativeMatcher(str string) (nativeMatcher, error) {
 	var err error
-	m := NativeMatcher{}
+	m := nativeMatcher{}
 	m.raw = str
 
 	if regularExpressionRex.MatchString(str) {
@@ -66,7 +68,7 @@ func newNativeMatcher(str string) (NativeMatcher, error) {
 	return m, err
 }
 
-func (m *NativeMatcher) UnmarshalJSON(data []byte) (err error) {
+func (m *nativeMatcher) UnmarshalJSON(data []byte) (err error) {
 	*m, err = newNativeMatcher(string(data[1 : len(data)-1]))
 	return err
 }

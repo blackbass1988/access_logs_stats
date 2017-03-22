@@ -1,7 +1,6 @@
-package input_test
+package input
 
 import (
-	"github.com/blackbass1988/access_logs_stats/core/input"
 	"testing"
 )
 
@@ -35,11 +34,11 @@ var testsparser = []testcaseparser{
 
 func TestParseSyslogMsg(t *testing.T) {
 
-	parser, _ := input.NewSyslogParser()
+	parser, _ := newSyslogParser()
 
 	for _, test := range testsparser {
 
-		syslogM, _ := parser.ParseSyslogMsg(test.msg)
+		syslogM, _ := parser.parseSyslogMsg(test.msg)
 
 		if test.priority != syslogM.Priority {
 			t.Error("priority ",

@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 	"regexp"
+	"sync"
 )
 
 const UDP_SAFE_PACK_SIZE = 2048
@@ -19,8 +20,8 @@ var (
 type SyslogInputReader struct {
 	BufferedReader
 
-	chanLock chan bool
-	buffer   []byte
+	m      sync.Mutex
+	buffer []byte
 
 	protocol    string
 	listen      string
@@ -31,17 +32,16 @@ type SyslogInputReader struct {
 	parser *syslogParser
 }
 
+//CreateSyslogInputReader created BufferedReader
+//dsn examples::
+// syslog:udp:binding_ip:binding_port/application
+// syslog:tcp:binding_ip:binding_port/application
+// syslog:tcp:binding_ip:binding_port/application
 func CreateSyslogInputReader(dsn string) (r *SyslogInputReader, err error) {
 
-	//dsn examples::
-	// syslog:udp:binding_ip:binding_port/application
-	// syslog:tcp:binding_ip:binding_port/application
-	// syslog:tcp:binding_ip:binding_port/application
-
 	r = &SyslogInputReader{}
-	r.chanLock = make(chan bool, 1)
 	r.buffer = []byte{}
-	r.parser, err = NewSyslogParser()
+	r.parser, err = newSyslogParser()
 	check(err)
 	//read dsn
 	err = r.parseDsn(dsn)
@@ -87,10 +87,10 @@ func (r *SyslogInputReader) readToBufferUDP() {
 }
 
 func (r *SyslogInputReader) FlushBuffer() []byte {
-	r.chanLock <- true
+	r.m.Lock()
 	buffer := r.buffer
 	r.buffer = []byte{}
-	<-r.chanLock
+	r.m.Unlock()
 	return buffer
 }
 
@@ -163,11 +163,11 @@ func (r *SyslogInputReader) handleConnectionUDP(conn net.Conn) {
 			log.Println(err)
 		}
 		bytesBuf := b[0:read]
-		r.chanLock <- true
+		r.m.Lock()
 		if r.appendToBuffer(bytesBuf) {
 			r.buffer = append(r.buffer, '\n')
 		}
-		<-r.chanLock
+		r.m.Unlock()
 		//log.Println(string(r.buffer))
 	}
 }
@@ -179,18 +179,18 @@ func (r *SyslogInputReader) handleConnectionTCP(conn net.Conn) {
 	for {
 		bytesBuf, err := buffer.ReadBytes('\n')
 		if err == io.EOF {
-			r.chanLock <- true
+			r.m.Lock()
 			if r.appendToBuffer(bytesBuf) {
 				r.buffer = append(r.buffer, '\n')
 			}
-			<-r.chanLock
+			r.m.Unlock()
 			break
 		} else if err != nil {
 			check(err)
 		}
-		r.chanLock <- true
+		r.m.Lock()
 		r.appendToBuffer(bytesBuf)
-		<-r.chanLock
+		r.m.Unlock()
 	}
 	//log.Println(string(r.buffer))
 }
@@ -201,7 +201,7 @@ func (r *SyslogInputReader) appendToBuffer(byteBuf []byte) bool {
 	}
 
 	//parse message.
-	m, err := r.parser.ParseSyslogMsg(string(byteBuf))
+	m, err := r.parser.parseSyslogMsg(string(byteBuf))
 
 	if err == UNKNOWN_INPUT_STRING_FORMAT {
 		log.Println(UNKNOWN_INPUT_STRING_FORMAT, string(byteBuf))

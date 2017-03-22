@@ -84,7 +84,7 @@ func NewConfig(filepath string) (config Config, err error) {
 	}
 
 	for _, f := range configJson.Filters {
-		//f.FilterRex, err = regexp.Compile(f.Matcher)
+		//f.FilterRex, err = regexp.Compile(f.matcher)
 
 		for _, filterItem := range f.Items {
 			for _, metric := range filterItem.Metrics {

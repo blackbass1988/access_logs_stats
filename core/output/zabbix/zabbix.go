@@ -99,10 +99,12 @@ func (z *zabbix) send(messages []*output.Message) {
 
 }
 
+//Send sends messages to zabbix
 func Send(messages []*output.Message) {
 	z.send(messages)
 }
 
+//Init initializes zabbix sender
 func Init(params map[string]string) {
 
 	for k, v := range params {

@@ -6,6 +6,7 @@ func (a Float64Data) Len() int           { return len(a) }
 func (a Float64Data) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a Float64Data) Less(i, j int) bool { return a[i] < a[j] }
 
+//Max returns min value in Floatdata
 func (a Float64Data) Min() float64 {
 
 	if len(a) == 0 {
@@ -15,6 +16,7 @@ func (a Float64Data) Min() float64 {
 	return a[0]
 }
 
+//Max returns max value in Floatdata
 func (a Float64Data) Max() float64 {
 
 	if len(a) == 0 {
@@ -24,6 +26,7 @@ func (a Float64Data) Max() float64 {
 	return a[len(a)-1]
 }
 
+//Avg returns Avg of values in Floatdata
 func (a Float64Data) Avg() float64 {
 
 	if len(a) == 0 {
@@ -38,6 +41,8 @@ func (a Float64Data) Avg() float64 {
 
 	return float64(sum) / float64(len(a))
 }
+
+//Percentile returns x percentile of values in Floatdata
 func (a Float64Data) Percentile(cent float64) float64 {
 	if len(a) == 0 {
 		return 0
@@ -52,7 +57,7 @@ func (a Float64Data) Percentile(cent float64) float64 {
 	slice := a[sliceSize-1:]
 	return float64(slice[0])
 }
-
+//Sum returns sum of values in Floatdata
 func (a Float64Data) Sum() float64 {
 	var sum float64
 
@@ -67,6 +72,7 @@ func (a Float64Data) Sum() float64 {
 	return sum
 }
 
+//ItemsPerSeconds returns items per second in Floatdata
 func (a Float64Data) ItemsPerSeconds(seconds float64) float64 {
 	return float64(len(a)) / seconds
 }
