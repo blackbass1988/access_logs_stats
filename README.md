@@ -190,5 +190,4 @@ make conf.d/*.json for multiple instances of app
 
 make normal exit after one tick
 
-yaml configuration
-
+choose dep management (glide, dep, etc...)
