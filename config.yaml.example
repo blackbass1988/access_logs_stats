@@ -1,0 +1,36 @@
+---
+#comments allowed here
+input: file:foo.txt
+regexp: (.+).+HTTP/\d.?\d?\s(?P<code>\d+)[^"]+"[^"]*" "[^"]*" (?P<time>\d{1,}\.\d{3})
+
+#comments allowed here
+period: 10s
+counts:
+- code
+- time
+aggregates:
+- time
+filters:
+- filter: ".+"
+  prefix: prefix2_
+  items:
+  - field: code
+    metrics:
+    - cps_200
+    - cps_400
+    - cps_500
+    - percentage_200
+  - field: time
+    metrics:
+    - avg
+    - cent_90
+    - min
+    - max
+output:
+- type: console
+  settings: {}
+- type: zabbix
+  settings:
+    zabbix_host: 127.0.0.1
+    zabbix_port: '1234'
+    host: "${host}"

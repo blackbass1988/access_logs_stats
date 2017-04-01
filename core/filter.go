@@ -10,12 +10,12 @@ var regularExpressionRex = regexp.MustCompile(`[\[\]{}+*\\()]`)
 
 //Filter matching input string
 type Filter struct {
-	Matcher *nativeMatcher `json:"filter"`
-	Prefix  string         `json:"prefix"`
+	Matcher *nativeMatcher `json:"filter" yaml:"filter"`
+	Prefix  string         `json:"prefix" yaml:"prefix"`
 	Items   []struct {
-		Field   string   `json:"field"`
-		Metrics []string `json:"metrics"`
-	} `json:"items"`
+		Field   string   `json:"field" yaml:"field"`
+		Metrics []string `json:"metrics" yaml:"metrics"`
+	} `json:"items" yaml:"items"`
 }
 
 //MatchString matches a input string
@@ -72,3 +72,17 @@ func (m *nativeMatcher) UnmarshalJSON(data []byte) (err error) {
 	*m, err = newNativeMatcher(string(data[1 : len(data)-1]))
 	return err
 }
+
+func (m *nativeMatcher) UnmarshalYAML(unmarshal func(interface{}) error) (err error) {
+
+	v := ""
+	if err := unmarshal(&v); err != nil {
+		return err
+	}
+	*m, err = newNativeMatcher(v)
+	return err
+}
+
+//func (m *nativeMatcher) UnmarshalYAML(data []byte) (err error) {
+//	return err
+//}
