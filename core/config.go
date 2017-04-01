@@ -59,7 +59,8 @@ func NewConfig(filepath string) (config Config, err error) {
 		return config, err
 	}
 
-	if strings.Contains(filepath, ".yaml") {
+	//filename can doesn't have "yaml" substring. dirty hack. === in start check
+	if strings.Contains(filepath, ".yaml") || bytes[0] == 45 && bytes[1] == 45 && bytes[2] == 45 {
 		err = yaml.Unmarshal(bytes, &configJson)
 	} else {
 		err = json.Unmarshal(bytes, &configJson)
