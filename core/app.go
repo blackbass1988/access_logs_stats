@@ -13,14 +13,6 @@ import (
 )
 
 var (
-
-	//ProgName is a just name
-	ProgName = "AccessLogsStats"
-	//Version it is a version of application will be overridden on build
-	Version = "dev"
-	//BuildTime it is a build time of application will be overridden on build
-	BuildTime = "dev"
-
 	errEmptyResult   = errors.New("bad string or regular expression")
 	errFiltersNotSet = errors.New("filters not set")
 	errOutputNotSet  = errors.New("there are least one output must be specified. 0 found")
