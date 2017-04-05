@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
 	"regexp"
@@ -12,19 +13,19 @@ import (
 )
 
 type OutputConfig struct {
-	Type     string            `json:"type"`
-	Settings map[string]string `json:"settings"`
+	Type     string            `json:"type" yaml:"type"`
+	Settings map[string]string `json:"settings" yaml:"settings"`
 }
 
 type configJson struct {
-	InputDsn   string   `json:"input"`
-	Regexp     string   `json:"regexp"`
-	Period     string   `json:"period"`
-	Counts     []string `json:"counts"`
-	Aggregates []string `json:"aggregates"`
+	InputDsn   string   `json:"input" yaml:"input"`
+	Regexp     string   `json:"regexp" yaml:"regexp"`
+	Period     string   `json:"period" yaml:"period"`
+	Counts     []string `json:"counts" yaml:"counts"`
+	Aggregates []string `json:"aggregates" yaml:"aggregates"`
 
-	Filters []*Filter       `json:"filters"`
-	Outputs []*OutputConfig `json:"output"`
+	Filters []*Filter       `json:"filters" yaml:"filters"`
+	Outputs []*OutputConfig `json:"output" yaml:"output"`
 }
 
 type Config struct {
@@ -48,6 +49,7 @@ func NewConfig(filepath string) (config Config, err error) {
 
 	//we need to lock file in processlist for restore by file descriptor if delete in runtime
 	_, err = os.Open(filepath)
+
 	if err != nil {
 		return config, err
 	}
@@ -57,7 +59,13 @@ func NewConfig(filepath string) (config Config, err error) {
 		return config, err
 	}
 
-	err = json.Unmarshal(bytes, &configJson)
+	//filename can doesn't have "yaml" substring. dirty hack. === in start check
+	if strings.Contains(filepath, ".yaml") || bytes[0] == 45 && bytes[1] == 45 && bytes[2] == 45 {
+		err = yaml.Unmarshal(bytes, &configJson)
+	} else {
+		err = json.Unmarshal(bytes, &configJson)
+	}
+
 	if err != nil {
 		return config, err
 	}

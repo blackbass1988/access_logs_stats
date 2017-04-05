@@ -57,6 +57,7 @@ func (a Float64Data) Percentile(cent float64) float64 {
 	slice := a[sliceSize-1:]
 	return float64(slice[0])
 }
+
 //Sum returns sum of values in Floatdata
 func (a Float64Data) Sum() float64 {
 	var sum float64

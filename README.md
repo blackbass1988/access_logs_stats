@@ -2,30 +2,22 @@
 
 [![Go Report Card](https://goreportcard.com/badge/blackbass1988/access_logs_stats)](https://goreportcard.com/report/github.com/blackbass1988/access_logs_stats)
 
-цель приложения - сделать штуку, которая могла бы обработать "очень много" access логов и построить по ним статистику
+The purpose of the application is to make a piece that could process "very many" access logs and build statistics on them
 
-установка GO
+GOLang setup
+
 ------------
 
-1) поставить в систему yum/apt/brew install go...
-2) поставить через [gvm](https://github.com/moovweb/gvm#installing) (аналог rvm)
-3) поставить [docker](https://www.docker.com/products/overview)
+1) install via yum/apt/brew install go...
+2) install via [gvm](https://github.com/moovweb/gvm#installing) (аналог rvm)
+3) install via [docker](https://www.docker.com/products/overview)
+4) install from [official site](https://golang.org/dl/)
 
-Все способы имеют права на жизнь. Например, в линукс машине у меня стоит gvm, 
-а на маке - через брю.
 
-Но я также успешно экспериментировал с докером. 
-
-для чисто билдов я бы, возможно, посоветовал использовать докер.
-Хотя, возможно, в будущем будет makefile, который будет смореть и, если нету go tools, но есть докер,
- то просто скачает образы и соберет все сам.
-  
-  Минус второго варианта - чтобы собрать 1.5+, необходим 1.4. По ссылке описано, как собирать 1.5+
-
-клонирование в GOPATH
+install to GOPATH
 ---------------------
 
-если нет $GOPATH, то создаем
+if you don't have $GOPATH setup it
 ```
 export GOPATH=~/go
 mkdir $GOPATH/{src,bin,pkg}
@@ -38,36 +30,32 @@ git clone https://github.com/blackbass1988/access_logs_stats $GOPATH/src/github.
 сборка
 ------
 
-для кросс компиляции нужен golang 1.5+
-лично я собирал на go 1.7.1
-
-
 common case
 ```
 make
 ```
 
-для линукса 64 бита
+linux amd64 example
 ```
 go test ./... &&  go fmt ./... && env GOOS=linux GOARCH=amd64 go build -ldflags="-s -w"
 ```
 
 
-для виндуса 64 бита
+windows amd64 example
 ```
 go test ./... &&  go fmt ./... && env GOOS=windows GOARCH=amd64 go build -ldflags="-s -w"
 ```
 
 
-для макуса 64 бита
+osx  amd64 example
 ```
 go test ./... &&  go fmt ./... && env GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w"
 ```
 
-есть вариант не устанавливать сам Go, а воспользоваться Docker'ом
+Docker example
 
 ```
-docker run --rm -v "$GOPATH":$GOPATH -w $(pwd) -e GOPATH=$GOPATH -e GOOS=linux -e GOARCH=amd64 golang:1.7 go test ./... &&  go fmt ./... && go build -v -ldflags="-s -w"
+docker run --rm -v "$GOPATH":$GOPATH -w $(pwd) -e GOPATH=$GOPATH -e GOOS=linux -e GOARCH=amd64 golang go test ./... &&  go fmt ./... && go build -v -ldflags="-s -w"
 ```
 
 косяк в строчке выше в том, что нужен $GOPATH, чтобы она выполнилась. 
@@ -90,64 +78,27 @@ docker run --rm -v "$GOPATH":$GOPATH -w $(pwd) -e GOPATH=$GOPATH -e GOOS=linux -
 upx access_logs_stats
 ```
 
-использование
+usage
 -------------
 
 ```
 ./access_logs_stats -c config.json
 ```
 
-пример config.json ниже
+```
+./access_logs_stats -c config.yaml
+```
 
-настройка 
+[config.json example](config.json.example)
+
+[config.yaml example](config.yaml.example)
+
+configuration
 ---------
 
-достаточно взять за основу config.json.example или пример ниже
-
-Описание параметров под примером
-
-```
-{
-  "input": "file::foo.txt",
-  "regexp": ".+HTTP\/\\d.?\\d?\\s(?P<code>\\d+)[^\"]+\"[^\"]*\" \"[^\"]*\" (?P<time>\\d{1,}\\.\\d{3})",
-  "period": "10s",
-  "counts": ["code", "time"],
-  "aggregates": ["time"],
-  "filters": [
-    {
-      "filter": ".+",
-      "prefix": "prefix2_",
-      "items": [
-        {
-          "field": "code",
-          "metrics": ["cps_200", "cps_400", "cps_500"]
-        },
-        {
-          "field": "time",
-          "metrics": ["avg", "cent_90", "min", "max"]
-        }
-      ]
-    }
-  ],
-  "output": [
-    {
-      "type": "console",
-      "settings": {}
-    },
-    {
-      "type": "zabbix",
-      "settings": {
-        "zabbix_host": "127.0.0.1",
-        "zabbix_port": "1234",
-        "host": "localhost.localhost"
-      }
-    }
-  ]
-}
-
 ```
 
-|поле|описание|
+|field|description|
 |----|------|
 |*input*| это точка, откуда будут читаться. Здесь может быть как файл,так и пайп, например. *Experimental: syslog:udp::515/nginx*|
 |*regexp*|глобальное регулярное выражение, которое нужно, чтобы выделить _поля_ для последующих вычислений|
@@ -168,7 +119,7 @@ one of:
 
 **Filter**
 
-|поле|описание|
+|field|description|
 |----|------|
 |*filter*| регулярное выражение, описывающее, какие строки должны попасть под фильтр |
 |*prefix*| префикс, который будет у ключа в output. |
@@ -218,7 +169,7 @@ host - имя хоста, которым будет представляться
 
 
 
-Запуск
+Run
 ------
 
 ```
@@ -233,10 +184,10 @@ make english doc
 
 make tests for sender 
 
-make normal syslog parser
+make normal syslog parser and remove regular expressions
 
 make conf.d/*.json for multiple instances of app
 
 make normal exit after one tick
 
-todo write data in appendIfOk via channel
+choose dep management (glide, dep, etc...)

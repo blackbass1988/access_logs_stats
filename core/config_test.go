@@ -5,7 +5,18 @@ import (
 	"testing"
 )
 
-func TestConfig(t *testing.T) {
+func TestYamlConfig(t *testing.T) {
+	filepath := "../config.yaml.example"
+	config, err := core.NewConfig(filepath)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	testConfig(t, config)
+}
+
+func TestJsonConfig(t *testing.T) {
 	filepath := "../config.json.example"
 
 	config, err := core.NewConfig(filepath)
@@ -13,6 +24,11 @@ func TestConfig(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	testConfig(t, config)
+
+}
+
+func testConfig(t *testing.T, config core.Config) {
 
 	if config.InputDsn != "file:foo.txt" {
 		t.Error(
