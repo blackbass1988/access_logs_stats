@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/blackbass1988/access_logs_stats/core/re"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
-	"regexp"
 	"strings"
 	"time"
 )
@@ -37,7 +37,7 @@ type Config struct {
 	Aggregates map[string]bool
 
 	Outputs []*OutputConfig
-	Rex     *regexp.Regexp
+	Rex     re.RegExp
 	Period  time.Duration
 	Filters []*Filter
 }
@@ -76,7 +76,7 @@ func NewConfig(filepath string) (config Config, err error) {
 		return config, err
 	}
 
-	config.Rex, err = regexp.Compile(configJson.Regexp)
+	config.Rex, err = re.Compile(configJson.Regexp)
 	if err != nil {
 		return config, err
 	}
@@ -92,7 +92,6 @@ func NewConfig(filepath string) (config Config, err error) {
 	}
 
 	for _, f := range configJson.Filters {
-		//f.FilterRex, err = regexp.Compile(f.matcher)
 
 		for _, filterItem := range f.Items {
 			for _, metric := range filterItem.Metrics {

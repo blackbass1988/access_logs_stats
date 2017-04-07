@@ -1,7 +1,7 @@
 ---
 #comments allowed here
 input: file:foo.txt
-regexp: (.+).+HTTP/\d.?\d?\s(?P<code>\d+)[^"]+"[^"]*" "[^"]*" (?P<time>\d{1,}\.\d{3})
+regexp: HTTP/\d.?\d?\s(?P<code>\d+)[^"]+"[^"]*" "[^"]*" (?P<time>\d{1,}\.\d{3})
 
 #comments allowed here
 period: 10s
