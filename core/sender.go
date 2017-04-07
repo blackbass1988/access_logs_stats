@@ -35,8 +35,6 @@ type Sender struct {
 	counts map[string]map[string]uint64
 
 	globalLock         sync.Mutex
-	writeFloatAggrLock sync.Mutex
-	writeCountsLock    sync.Mutex
 }
 
 func (s *Sender) resetData() {
@@ -51,28 +49,27 @@ func (s *Sender) appendIfOk(row *RowEntry) (err error) {
 
 	if s.filter.MatchString(row.Raw) {
 
+		s.globalLock.Lock()
+
 		for field, val := range row.Fields {
 
 			if _, ok := s.config.Aggregates[field]; ok {
 				valFloat, err := strconv.ParseFloat(val, 10)
 				check(err)
-				s.writeFloatAggrLock.Lock()
 				s.floatsForAggregates[field] = append(s.floatsForAggregates[field], valFloat)
-				s.writeFloatAggrLock.Unlock()
 			}
 
 			//в конфиге указано поле, как поле, по которому считаются
 			// суммы по уникальным значениям
 			if _, ok := s.config.Counts[field]; ok {
-				s.writeCountsLock.Lock()
 				if s.counts[field] == nil {
 					s.counts[field] = make(map[string]uint64)
 				}
 				s.counts[field][val]++
-				s.writeCountsLock.Unlock()
 
 			}
 		}
+		s.globalLock.Unlock()
 	}
 
 	return err
