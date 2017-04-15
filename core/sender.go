@@ -34,7 +34,7 @@ type Sender struct {
 	//вывод происходит по схеме - кол-во в 1 секунду
 	counts map[string]map[string]uint64
 
-	globalLock         sync.Mutex
+	globalLock sync.Mutex
 }
 
 func (s *Sender) resetData() {
