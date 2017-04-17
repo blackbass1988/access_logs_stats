@@ -81,6 +81,11 @@ func testConfig(t *testing.T, config core.Config) {
 
 	f := config.Filters[0]
 
+	checkFilter(t, f)
+	checkConfig(t, config)
+}
+
+func checkFilter(t *testing.T, f *core.Filter) {
 	if f.String() != ".+" {
 		t.Errorf("filter. Expected [.+] . Actual [%s]", f.String())
 	}
@@ -101,6 +106,9 @@ func testConfig(t *testing.T, config core.Config) {
 	if len(oneItem.Metrics) != 4 {
 		t.Error("len(oneItem.Metrics) must be 3 but was ", len(oneItem.Metrics))
 	}
+}
+
+func checkConfig(t *testing.T, config core.Config) {
 
 	if len(config.Counts) != 2 {
 		t.Error("config.Counts. Expected 2. Actual ", len(config.Counts))
