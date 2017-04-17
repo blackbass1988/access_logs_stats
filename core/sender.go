@@ -93,28 +93,25 @@ func (s *Sender) sendStats() (err error) {
 
 func (s *Sender) appendToOutput(field string, metric string) {
 	var (
-		cnt             uint64
 		key             string
-		ok              bool
-		result          float64
 		periodInSeconds float64
+		message         string
 	)
 
 	key = fmt.Sprintf("%s_%v", field, metric)
 
 	switch {
 	case metric == "min":
-		s.output.AddMessage(key, fmt.Sprintf("%.3f", s.getFloatData(field).Min()))
+		message = fmt.Sprintf("%.3f", s.getFloatData(field).Min())
 	case metric == "max":
-		s.output.AddMessage(key, fmt.Sprintf("%.3f", s.getFloatData(field).Max()))
+		message = fmt.Sprintf("%.3f", s.getFloatData(field).Max())
 	case metric == "len":
-		s.output.AddMessage(key, fmt.Sprintf("%d", s.getFloatData(field).Len()))
+		message = fmt.Sprintf("%d", s.getFloatData(field).Len())
 	case metric == "avg":
-		s.output.AddMessage(key, fmt.Sprintf("%.3f", s.getFloatData(field).Avg()))
+		message = fmt.Sprintf("%.3f", s.getFloatData(field).Avg())
 	case metric == "sum":
-		s.output.AddMessage(key, fmt.Sprintf("%.3f", s.getFloatData(field).Sum()))
+		message = fmt.Sprintf("%.3f", s.getFloatData(field).Sum())
 	case metric == "sum_ps":
-
 		result := s.getFloatData(field).Sum()
 		periodInSeconds = s.getPeriodInSeconds()
 		if periodInSeconds == 0 {
@@ -123,41 +120,59 @@ func (s *Sender) appendToOutput(field string, metric string) {
 			result = s.getFloatData(field).Sum() / s.getPeriodInSeconds()
 		}
 
-		s.output.AddMessage(key, fmt.Sprintf("%.3f", result))
+		message = fmt.Sprintf("%.3f", result)
 	case metric == "ips":
-		s.output.AddMessage(key, fmt.Sprintf("%.3f", s.getFloatData(field).ItemsPerSeconds(s.getPeriodInSeconds())))
+		message = fmt.Sprintf("%.3f", s.getFloatData(field).ItemsPerSeconds(s.getPeriodInSeconds()))
 	case strings.Contains(metric, "cent_"):
 		cent := strings.Split(metric, "_")
 		centFloat, err := strconv.ParseFloat(cent[1], 10)
 		checkOrFail(err)
-		s.output.AddMessage(key, fmt.Sprintf("%.3f", s.getFloatData(field).Percentile(centFloat)))
-
+		message = fmt.Sprintf("%.3f", s.getFloatData(field).Percentile(centFloat))
 	case metric == "uniq":
-		s.output.AddMessage(key, fmt.Sprintf("%d", s.getUniqCnt(field)))
+		message = fmt.Sprintf("%d", s.getUniqCnt(field))
 	case metric == "uniq_ps":
-		s.output.AddMessage(key, fmt.Sprintf("%.3f", float64(s.getUniqCnt(field))/s.getPeriodInSeconds()))
+		message = fmt.Sprintf("%.3f", float64(s.getUniqCnt(field))/s.getPeriodInSeconds())
 	case strings.Contains(metric, "cps_"):
-		metrics := strings.Split(metric, "_")
-		metric = metrics[1]
-		if _, ok = s.counts[field]; !ok {
-			cnt = 0
-		} else if cnt, ok = s.counts[field][metric]; !ok {
-			cnt = 0
-		}
-		s.output.AddMessage(key, fmt.Sprintf("%.3f", float64(cnt)/s.getPeriodInSeconds()))
+		message = s.processCps(metric, field)
 	case strings.Contains(metric, "percentage_"):
-		metrics := strings.Split(metric, "_")
-		metric = metrics[1]
-
-		total := s.getTotalCountByField(field)
-
-		result = 0
-		if cnt, ok = s.counts[field][metric]; ok && total > 0 {
-			result = float64(cnt * 100 / total)
-		}
-
-		s.output.AddMessage(key, fmt.Sprintf("%.3f", result))
+		message = s.processPercentage(metric, field)
 	}
+	s.output.AddMessage(key, message)
+}
+
+func (s *Sender) processCps(metric string, field string) string {
+	var (
+		ok  bool
+		cnt uint64
+	)
+
+	metrics := strings.Split(metric, "_")
+	metric = metrics[1]
+	if _, ok = s.counts[field]; !ok {
+		cnt = 0
+	} else if cnt, ok = s.counts[field][metric]; !ok {
+		cnt = 0
+	}
+	return fmt.Sprintf("%.3f", float64(cnt)/s.getPeriodInSeconds())
+}
+
+func (s *Sender) processPercentage(metric string, field string) string {
+	var (
+		ok     bool
+		cnt    uint64
+		result float64
+	)
+
+	metrics := strings.Split(metric, "_")
+	metric = metrics[1]
+
+	total := s.getTotalCountByField(field)
+
+	result = 0
+	if cnt, ok = s.counts[field][metric]; ok && total > 0 {
+		result = float64(cnt * 100 / total)
+	}
+	return fmt.Sprintf("%.3f", result)
 }
 
 func (s *Sender) getTotalCountByField(field string) uint64 {
