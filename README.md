@@ -27,7 +27,7 @@ mkdir $GOPATH/{src,bin,pkg}
 git clone https://github.com/blackbass1988/access_logs_stats $GOPATH/src/github.com/blackbass1988/access_logs_stats
 ```
 
-сборка
+Build
 ------
 
 common case
@@ -35,37 +35,7 @@ common case
 make
 ```
 
-linux amd64 example
-```
-go test ./... &&  go fmt ./... && env GOOS=linux GOARCH=amd64 go build -ldflags="-s -w"
-```
-
-
-windows amd64 example
-```
-go test ./... &&  go fmt ./... && env GOOS=windows GOARCH=amd64 go build -ldflags="-s -w"
-```
-
-
-osx  amd64 example
-```
-go test ./... &&  go fmt ./... && env GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w"
-```
-
-Docker example
-
-```
-docker run --rm -v "$GOPATH":$GOPATH -w $(pwd) -e GOPATH=$GOPATH -e GOOS=linux -e GOARCH=amd64 golang go test ./... &&  go fmt ./... && go build -v -ldflags="-s -w"
-```
-
-косяк в строчке выше в том, что нужен $GOPATH, чтобы она выполнилась. 
-
-Кстати, заметил, что бинарники для линукса получаются короче,
- если собирать их в линкусе, а не делать кросс-компиляцию (100кб после запаковки с помощью upx)
-
-более подробный список целей сборки тут https://golang.org/doc/install/source#environment
-
-упаковка
+UPX
 --------
 
 после того, как добро собралось, можно пакнуть с использованием https://upx.github.io
