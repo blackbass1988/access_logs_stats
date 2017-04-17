@@ -10,10 +10,10 @@ type RegExp interface {
 
 //Compile returns implementation of RegExp
 func Compile(expr string) (RegExp, error) {
-	return newNativeRexCompile(expr)
+	return newLibPcreRegexp(expr)
 }
 func MustCompile(expr string) RegExp {
-	r, err := newNativeRexCompile(expr)
+	r, err := newLibPcreRegexp(expr)
 
 	if err != nil {
 		panic(err)
