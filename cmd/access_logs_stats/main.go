@@ -12,8 +12,17 @@ import (
 	"time"
 )
 
+const progName = "AccessLogsStats"
+
+var (
+	//version it is a version of application will be overridden on build
+	version = "0.7.1"
+	//buildTime it is a build time of application will be overridden on build
+	buildTime = "unknown"
+)
+
 func printHello() {
-	log.Printf("%s ver.%s@%s", core.ProgName, core.Version, core.BuildTime)
+	log.Printf("%s ver.%s@%s", progName, version, buildTime)
 }
 
 func main() {
