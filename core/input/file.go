@@ -2,7 +2,6 @@ package input
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -12,6 +11,7 @@ import (
 	"time"
 )
 
+//FileInputReader is a BufferedReader for a file reading
 type FileInputReader struct {
 	BufferedReader
 
@@ -25,6 +25,7 @@ type FileInputReader struct {
 	buffer []byte
 }
 
+//CreateFileReader create new FileInputReader
 func CreateFileReader(dsn string) (r *FileInputReader, err error) {
 	filename := strings.Replace(dsn, "file:", "", 1)
 
@@ -38,13 +39,46 @@ func CreateFileReader(dsn string) (r *FileInputReader, err error) {
 	return r, err
 }
 
+//Close implements Close method of BufferedReader for FileInputReader
+func (r *FileInputReader) Close() {
+	r.file.Close()
+}
+
+//ReadToBuffer implements ReadToBuffer method of BufferedReader for FileInputReader
+func (r *FileInputReader) ReadToBuffer() {
+	log.Println("reading...")
+	for {
+		r.m.Lock()
+		bytesBuf, err := r.fileReader.ReadBytes('\n')
+		r.m.Unlock()
+		if err == io.EOF {
+			time.Sleep(10 * time.Millisecond)
+			continue
+		} else if err != nil {
+			check(err)
+		}
+		r.m.Lock()
+		r.buffer = append(r.buffer, bytesBuf...)
+		r.m.Unlock()
+	}
+}
+
+//FlushBuffer implements FlushBuffer method of BufferedReader for FileInputReader
+func (r *FileInputReader) FlushBuffer() []byte {
+	r.m.Lock()
+	buffer := r.buffer
+	r.buffer = []byte{}
+	r.m.Unlock()
+	return buffer
+}
+
 func (r *FileInputReader) openFile(filename string) {
 	var err error
 
 	r.file, err = os.Open(filename)
 	r.fi, err = r.file.Stat()
 	if err != nil && !os.IsExist(err) {
-		err = errors.New(fmt.Sprintf("file \"%s\" not exists", filename))
+		err = fmt.Errorf("file \"%s\" not exists", filename)
 	}
 	r.fileReader = bufio.NewReader(r.file)
 	check(err)
@@ -74,34 +108,4 @@ func (r *FileInputReader) checkFile() {
 			prevSize = fi.Size()
 		}
 	}
-}
-
-func (r *FileInputReader) Close() {
-	r.file.Close()
-}
-
-func (r *FileInputReader) ReadToBuffer() {
-	log.Println("reading...")
-	for {
-		r.m.Lock()
-		bytesBuf, err := r.fileReader.ReadBytes('\n')
-		r.m.Unlock()
-		if err == io.EOF {
-			time.Sleep(10 * time.Millisecond)
-			continue
-		} else if err != nil {
-			check(err)
-		}
-		r.m.Lock()
-		r.buffer = append(r.buffer, bytesBuf...)
-		r.m.Unlock()
-	}
-}
-
-func (r *FileInputReader) FlushBuffer() []byte {
-	r.m.Lock()
-	buffer := r.buffer
-	r.buffer = []byte{}
-	r.m.Unlock()
-	return buffer
 }

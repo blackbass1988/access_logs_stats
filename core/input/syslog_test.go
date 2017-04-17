@@ -1,7 +1,6 @@
-package input_test
+package input
 
 import (
-	"github.com/blackbass1988/access_logs_stats/core/input"
 	"testing"
 )
 
@@ -41,28 +40,28 @@ var tests = []testcase{
 		"zoo",
 		":1234",
 		"application",
-		input.UNKNOWN_PROTOCOL,
+		ErrorUnknownProtocol,
 	},
 	{
 		"syslog:tcp::1234",
 		"tcp",
 		":1234",
 		"",
-		input.INCORRENCT_DSN,
+		ErrorIncorrectDSN,
 	},
 	{
 		"syslog:foo.txt",
 		"",
 		":1234",
 		"",
-		input.INCORRENCT_DSN,
+		ErrorIncorrectDSN,
 	},
 }
 
 func TestParseDsn(t *testing.T) {
 
 	for _, tcase := range tests {
-		actualProtocol, actualListen, actualApplication, actualErr := input.ParseSyslogDsn(tcase.dsn)
+		actualProtocol, actualListen, actualApplication, actualErr := parseSyslogDsn(tcase.dsn)
 
 		if actualErr != tcase.expectedError {
 			t.Error("expected err ", tcase.expectedError,

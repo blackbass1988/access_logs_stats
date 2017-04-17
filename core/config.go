@@ -2,32 +2,16 @@ package core
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
+	"github.com/blackbass1988/access_logs_stats/core/re"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
-	"regexp"
 	"strings"
 	"time"
 )
 
-type OutputConfig struct {
-	Type     string            `json:"type" yaml:"type"`
-	Settings map[string]string `json:"settings" yaml:"settings"`
-}
-
-type configJson struct {
-	InputDsn   string   `json:"input" yaml:"input"`
-	Regexp     string   `json:"regexp" yaml:"regexp"`
-	Period     string   `json:"period" yaml:"period"`
-	Counts     []string `json:"counts" yaml:"counts"`
-	Aggregates []string `json:"aggregates" yaml:"aggregates"`
-
-	Filters []*Filter       `json:"filters" yaml:"filters"`
-	Outputs []*OutputConfig `json:"output" yaml:"output"`
-}
-
+//Config base struct of parser config
 type Config struct {
 	InputDsn string
 
@@ -36,14 +20,31 @@ type Config struct {
 	Counts     map[string]bool
 	Aggregates map[string]bool
 
-	Outputs []*OutputConfig
-	Rex     *regexp.Regexp
+	Outputs []*outputConfig
+	Rex     re.RegExp
 	Period  time.Duration
 	Filters []*Filter
 }
 
+type outputConfig struct {
+	Type     string            `json:"type" yaml:"type"`
+	Settings map[string]string `json:"settings" yaml:"settings"`
+}
+
+type configStruct struct {
+	InputDsn   string   `json:"input" yaml:"input"`
+	Regexp     string   `json:"regexp" yaml:"regexp"`
+	Period     string   `json:"period" yaml:"period"`
+	Counts     []string `json:"counts" yaml:"counts"`
+	Aggregates []string `json:"aggregates" yaml:"aggregates"`
+
+	Filters []*Filter       `json:"filters" yaml:"filters"`
+	Outputs []*outputConfig `json:"output" yaml:"output"`
+}
+
+//NewConfig parse config filepath and return new Config
 func NewConfig(filepath string) (config Config, err error) {
-	configJson := new(configJson)
+	configStruct := new(configStruct)
 	config.Aggregates = make(map[string]bool)
 	config.Counts = make(map[string]bool)
 
@@ -61,38 +62,37 @@ func NewConfig(filepath string) (config Config, err error) {
 
 	//filename can doesn't have "yaml" substring. dirty hack. === in start check
 	if strings.Contains(filepath, ".yaml") || bytes[0] == 45 && bytes[1] == 45 && bytes[2] == 45 {
-		err = yaml.Unmarshal(bytes, &configJson)
+		err = yaml.Unmarshal(bytes, &configStruct)
 	} else {
-		err = json.Unmarshal(bytes, &configJson)
+		err = json.Unmarshal(bytes, &configStruct)
 	}
 
 	if err != nil {
 		return config, err
 	}
 
-	config.InputDsn = configJson.InputDsn
-	config.Period, err = time.ParseDuration(configJson.Period)
+	config.InputDsn = configStruct.InputDsn
+	config.Period, err = time.ParseDuration(configStruct.Period)
 	if err != nil {
 		return config, err
 	}
 
-	config.Rex, err = regexp.Compile(configJson.Regexp)
+	config.Rex, err = re.Compile(configStruct.Regexp)
 	if err != nil {
 		return config, err
 	}
 
-	config.Outputs = configJson.Outputs
+	config.Outputs = configStruct.Outputs
 
-	for _, el := range configJson.Counts {
+	for _, el := range configStruct.Counts {
 		config.Counts[el] = true
 	}
 
-	for _, el := range configJson.Aggregates {
+	for _, el := range configStruct.Aggregates {
 		config.Aggregates[el] = true
 	}
 
-	for _, f := range configJson.Filters {
-		//f.FilterRex, err = regexp.Compile(f.matcher)
+	for _, f := range configStruct.Filters {
 
 		for _, filterItem := range f.Items {
 			for _, metric := range filterItem.Metrics {
@@ -102,17 +102,15 @@ func NewConfig(filepath string) (config Config, err error) {
 					metric == "sum", metric == "sum_ps", metric == "ips", strings.Contains(metric, "cent_"):
 
 					if !config.Aggregates[filterItem.Field] {
-						err = errors.New(
-							fmt.Sprintf("field \"%s\" must in in \"aggregates\" section"+
-								" because you want metric \"%s\"",
-								filterItem.Field, metric))
+						err = fmt.Errorf("field \"%s\" must in in \"aggregates\" section"+
+							" because you want metric \"%s\"",
+							filterItem.Field, metric)
 					}
 				case metric == "uniq", metric == "uniq_ps", strings.Contains(metric, "cps_"), strings.Contains(metric, "percentage_"):
 					if !config.Counts[filterItem.Field] {
-						err = errors.New(
-							fmt.Sprintf("field \"%s\" must in in \"counts\" section "+
-								"because you want metric \"%s\"",
-								filterItem.Field, metric))
+						err = fmt.Errorf("field \"%s\" must in in \"counts\" section "+
+							"because you want metric \"%s\"",
+							filterItem.Field, metric)
 					}
 				}
 

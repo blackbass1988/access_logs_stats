@@ -1,0 +1,12 @@
+hash: fe0ebf6456ec66510298cb2dcec0cda6e71413f69ad5ede745dd752ae6099aac
+updated: 2017-04-14T18:36:09.517494479+10:00
+imports:
+- name: github.com/glenn-brown/golang-pkg-pcre
+  version: 48bb82a8b8ceea98f4e97825b43870f6ba1970d6
+  subpackages:
+  - src/pkg/pcre
+- name: gopkg.in/check.v1
+  version: 20d25e2804050c1cd24a7eea1e7a6447dd0e74ec
+- name: gopkg.in/yaml.v2
+  version: cd8b52f8269e0feb286dfeef29f8fe4d5b397e0b
+testImports: []

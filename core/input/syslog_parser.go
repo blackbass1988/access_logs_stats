@@ -2,7 +2,7 @@ package input
 
 import (
 	"errors"
-	"regexp"
+	"github.com/blackbass1988/access_logs_stats/core/re"
 )
 
 //todo make normal parser. default regexp is very slow
@@ -14,22 +14,23 @@ type syslogMessage struct {
 	Message     string
 }
 
-var UNKNOWN_INPUT_STRING_FORMAT = errors.New("UNKNOWN_INPUT_STRING_FORMAT")
+//ErrorUnknownInputStringFormat says that server received invalid string and it can't read it
+var ErrorUnknownInputStringFormat = errors.New("ErrorUnknownInputStringFormat")
 
 func newSyslogParser() (p *syslogParser, err error) {
 	p = new(syslogParser)
-	p.reg1, err = regexp.Compile(`<(\d+)>(\S+\s+\w+\s+\S+)\s+(\S+)\s+(\w+):\s*(.+)`)
+	p.reg1, err = re.Compile(`<(\d+)>(\S+\s+\w+\s+\S+)\s+(\S+)\s+(\w+):\s*(.+)`)
 	if err != nil {
 		return
 	}
-	p.reg2, err = regexp.Compile(`<(\d+)>\s*([0-9\-T:.+]+)\s*(\S+)\s*(\S+)[^\]]+\]\s*(\S+)`)
+	p.reg2, err = re.Compile(`<(\d+)>\s*([0-9\-T:.+]+)\s*(\S+)\s*(\S+)[^\]]+\]\s*(\S+)`)
 
 	return p, err
 }
 
 type syslogParser struct {
-	reg1 *regexp.Regexp
-	reg2 *regexp.Regexp
+	reg1 re.RegExp
+	reg2 re.RegExp
 }
 
 func (s *syslogParser) parseSyslogMsg(str string) (m syslogMessage, err error) {
@@ -50,7 +51,7 @@ func (s *syslogParser) parseSyslogMsg(str string) (m syslogMessage, err error) {
 		if len(matches) != 0 {
 			m.Priority, m.Date, m.Hostname, m.Application, m.Message = matches[1], matches[2], matches[4], matches[5], matches[6]
 		} else {
-			err = UNKNOWN_INPUT_STRING_FORMAT
+			err = ErrorUnknownInputStringFormat
 		}
 	}
 	return m, err

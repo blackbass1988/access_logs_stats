@@ -5,10 +5,10 @@ import (
 	"bytes"
 	"errors"
 	"github.com/blackbass1988/access_logs_stats/core/input"
+	"github.com/blackbass1988/access_logs_stats/core/re"
 	"io"
 	"log"
 	"os"
-	"regexp"
 	"time"
 )
 
@@ -47,7 +47,7 @@ func NewApp(config Config) (app *App, err error) {
 }
 
 //NewRow create new rowEntry
-func NewRow(rawString string, rex *regexp.Regexp) (row *RowEntry, err error) {
+func NewRow(rawString string, rex re.RegExp) (row *RowEntry, err error) {
 	row = new(RowEntry)
 	row.Fields = make(map[string]string)
 	row.Raw = rawString

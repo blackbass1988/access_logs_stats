@@ -1,12 +1,18 @@
 package core
 
+//Float64Data extends []float64 with data analyze functions
 type Float64Data []float64
 
-func (a Float64Data) Len() int           { return len(a) }
-func (a Float64Data) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+//Len returns Len of Float64Data slice
+func (a Float64Data) Len() int { return len(a) }
+
+//Swap swaps 2 values in slice
+func (a Float64Data) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+
+//Less returns true if i < j
 func (a Float64Data) Less(i, j int) bool { return a[i] < a[j] }
 
-//Max returns min value in Floatdata
+//Min returns min value in Floatdata
 func (a Float64Data) Min() float64 {
 
 	if len(a) == 0 {

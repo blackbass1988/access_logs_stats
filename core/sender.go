@@ -11,6 +11,7 @@ import (
 	"sync"
 )
 
+//Sender sends data to output. omg omg omg
 type Sender struct {
 	filter *Filter
 
@@ -223,6 +224,7 @@ func NewSender(filter *Filter, config *Config) (*Sender, error) {
 	return sender, nil
 }
 
+//SenderCollection is a collection of Senders
 type SenderCollection struct {
 	procs  []*Sender
 	config *Config
