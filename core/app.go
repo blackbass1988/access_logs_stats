@@ -74,7 +74,7 @@ func (a *App) Start() {
 	tick := time.Tick(a.config.Period)
 	log.Println("start a reading...")
 	err = a.openReader()
-	check(err)
+	checkOrFail(err)
 
 	defer func() {
 		a.ir.Close()
@@ -141,7 +141,7 @@ func (a *App) processBuffer() {
 		if err == io.EOF {
 			break
 		} else if err != nil {
-			check(err)
+			checkOrFail(err)
 		}
 
 		logRow, err := NewRow(rawString, a.config.Rex)
@@ -149,7 +149,7 @@ func (a *App) processBuffer() {
 			log.Println(err, rawString)
 			continue
 		}
-		check(err)
+		checkOrFail(err)
 
 		a.senderCollection.appendData(logRow)
 		lastString = rawString

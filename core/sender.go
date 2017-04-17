@@ -56,7 +56,7 @@ func (s *Sender) appendIfOk(row *RowEntry) (err error) {
 
 			if _, ok := s.config.Aggregates[field]; ok {
 				valFloat, err := strconv.ParseFloat(val, 10)
-				check(err)
+				checkOrFail(err)
 				s.floatsForAggregates[field] = append(s.floatsForAggregates[field], valFloat)
 			}
 
@@ -129,7 +129,7 @@ func (s *Sender) appendToOutput(field string, metric string) {
 	case strings.Contains(metric, "cent_"):
 		cent := strings.Split(metric, "_")
 		centFloat, err := strconv.ParseFloat(cent[1], 10)
-		check(err)
+		checkOrFail(err)
 		s.output.AddMessage(key, fmt.Sprintf("%.3f", s.getFloatData(field).Percentile(centFloat)))
 
 	case metric == "uniq":
@@ -237,7 +237,7 @@ func NewSenderCollection(config *Config) *SenderCollection {
 	processes := []*Sender{}
 	for _, f := range config.Filters {
 		sp, err := NewSender(f, config)
-		check(err)
+		checkOrFail(err)
 		processes = append(processes, sp)
 	}
 

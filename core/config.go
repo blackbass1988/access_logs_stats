@@ -60,7 +60,7 @@ func NewConfig(filepath string) (config Config, err error) {
 		return config, err
 	}
 
-	//filename can doesn't have "yaml" substring. dirty hack. === in start check
+	//filename can doesn't have "yaml" substring. dirty hack. === in start checkOrFail
 	if strings.Contains(filepath, ".yaml") || bytes[0] == 45 && bytes[1] == 45 && bytes[2] == 45 {
 		err = yaml.Unmarshal(bytes, &configStruct)
 	} else {
@@ -92,34 +92,7 @@ func NewConfig(filepath string) (config Config, err error) {
 		config.Aggregates[el] = true
 	}
 
-	for _, f := range configStruct.Filters {
-
-		for _, filterItem := range f.Items {
-			for _, metric := range filterItem.Metrics {
-
-				switch {
-				case metric == "min", metric == "max", metric == "len", metric == "avg",
-					metric == "sum", metric == "sum_ps", metric == "ips", strings.Contains(metric, "cent_"):
-
-					if !config.Aggregates[filterItem.Field] {
-						err = fmt.Errorf("field \"%s\" must in in \"aggregates\" section"+
-							" because you want metric \"%s\"",
-							filterItem.Field, metric)
-					}
-				case metric == "uniq", metric == "uniq_ps", strings.Contains(metric, "cps_"), strings.Contains(metric, "percentage_"):
-					if !config.Counts[filterItem.Field] {
-						err = fmt.Errorf("field \"%s\" must in in \"counts\" section "+
-							"because you want metric \"%s\"",
-							filterItem.Field, metric)
-					}
-				}
-
-			}
-		}
-
-		check(err)
-		config.Filters = append(config.Filters, f)
-	}
+	config.Filters = processFilters(configStruct.Filters, config.Counts, config.Aggregates)
 
 	if len(config.Filters) == 0 {
 		err = errFiltersNotSet
@@ -130,4 +103,40 @@ func NewConfig(filepath string) (config Config, err error) {
 	}
 
 	return config, err
+}
+
+func processFilters(filters []*Filter, counts map[string]bool, aggregates map[string]bool) []*Filter {
+
+	var err error
+	var configFilters []*Filter
+
+	for _, f := range filters {
+
+		for _, filterItem := range f.Items {
+			for _, metric := range filterItem.Metrics {
+
+				switch {
+				case metric == "min", metric == "max", metric == "len", metric == "avg",
+					metric == "sum", metric == "sum_ps", metric == "ips", strings.Contains(metric, "cent_"):
+
+					if !aggregates[filterItem.Field] {
+						err = fmt.Errorf("field \"%s\" must in in \"aggregates\" section"+
+							" because you want metric \"%s\"",
+							filterItem.Field, metric)
+					}
+				case metric == "uniq", metric == "uniq_ps", strings.Contains(metric, "cps_"), strings.Contains(metric, "percentage_"):
+					if !counts[filterItem.Field] {
+						err = fmt.Errorf("field \"%s\" must in in \"counts\" section "+
+							"because you want metric \"%s\"",
+							filterItem.Field, metric)
+					}
+				}
+
+			}
+		}
+
+		checkOrFail(err)
+		configFilters = append(configFilters, f)
+	}
+	return configFilters
 }

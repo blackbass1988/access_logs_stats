@@ -6,7 +6,7 @@ import (
 	"log"
 )
 
-func check(err error) {
+func checkOrFail(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
