@@ -3,11 +3,10 @@ package core
 import (
 	"github.com/blackbass1988/access_logs_stats/core/re"
 	"log"
-	"regexp"
 	"strings"
 )
 
-var regularExpressionRex = regexp.MustCompile(`[\[\]{}+*\\()]`)
+var regularExpressionRex = re.MustCompile(`[\[\]{}+*\\()]`)
 
 //Filter matching input string
 type Filter struct {

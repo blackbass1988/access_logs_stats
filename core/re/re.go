@@ -12,3 +12,11 @@ type RegExp interface {
 func Compile(expr string) (RegExp, error) {
 	return newNativeRexCompile(expr)
 }
+func MustCompile(expr string) RegExp {
+	r, err := newNativeRexCompile(expr)
+
+	if err != nil {
+		panic(err)
+	}
+	return r
+}
