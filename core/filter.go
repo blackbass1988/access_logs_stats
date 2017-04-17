@@ -30,17 +30,16 @@ func (f *Filter) String() string {
 type matcher struct {
 	raw     string
 	isRegex bool
+	alwaysMatch bool
 	matcher re.RegExp
 }
 
+//MatchString matches input string and return true if str was matches with filter and false if not
 func (m *matcher) MatchString(str string) bool {
 
-	//micro optimization
-	if m.String() == ".+" || m.String() == ".*" {
+	if m.alwaysMatch {
 		return true
-	}
-
-	if m.isRegex {
+	} else if m.isRegex {
 		return m.matcher.MatchString(str)
 	} else {
 		return strings.Contains(str, m.raw)
@@ -56,12 +55,15 @@ func newmatcher(str string) (matcher, error) {
 	m := matcher{}
 	m.raw = str
 
-	if regularExpressionRex.MatchString(str) {
+	if str == ".+" || str == ".*" || str == "*" || str == "" {
+		m.alwaysMatch = true
+		log.Printf("filter [%s] was recognized as \"always match expression\"\n", str)
+	} else if regularExpressionRex.MatchString(str) {
 		m.isRegex = true
-		log.Printf("filter [%s] was recognized as regular expersion\n", str)
+		log.Printf("filter [%s] was recognized as \"regular expersion\"\n", str)
 		m.matcher, err = re.Compile(str)
 	} else {
-		log.Printf("filter [%s] was recognized as regular string\n", str)
+		log.Printf("filter [%s] was recognized as \"string match expression\"\n", str)
 	}
 	return m, err
 }
