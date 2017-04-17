@@ -16,10 +16,24 @@ import (
 var (
 	version   = "0.8"
 	buildTime = "unknown"
+	commit    = "unknown"
+	branch    = "unknown"
 )
 
+func init() {
+	if version == "" {
+		version = "unknown"
+	}
+	if commit == "" {
+		commit = "unknown"
+	}
+	if branch == "" {
+		branch = "unknown"
+	}
+}
+
 func printHello() {
-	log.Printf("AccessLogsStats ver.%s@%s", version, buildTime)
+	log.Printf("AccessLogsStats ver.%s@%s (git %s %s)", version, buildTime, branch, commit)
 }
 
 func main() {
