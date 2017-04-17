@@ -5,6 +5,7 @@ import (
 	"github.com/blackbass1988/access_logs_stats/core"
 	"log"
 	"os"
+	"os/signal"
 
 	"io"
 	"runtime"
@@ -13,7 +14,7 @@ import (
 )
 
 var (
-	version = "0.8"
+	version   = "0.8"
 	buildTime = "unknown"
 )
 
@@ -24,16 +25,38 @@ func printHello() {
 func main() {
 	var (
 		fileconfig       string
-		profile          bool
+		heapProfile      string
+		cpuProfile       string
 		exitAfterOneTick bool
 	)
 
 	printHello()
 
 	flag.StringVar(&fileconfig, "c", "", "config path")
-	flag.BoolVar(&profile, "p", false, "enable profiling")
+	flag.StringVar(&heapProfile, "heapprofile", "", "enable heap profiling")
+	flag.StringVar(&cpuProfile, "cpuprofile", "", "Write the cpu heapProfile to `filename`")
 	flag.BoolVar(&exitAfterOneTick, "one", false, "make one tick end exit")
 	flag.Parse()
+
+	if cpuProfile != "" {
+		f, err := os.Create(cpuProfile)
+		if err != nil {
+			panic(err)
+		}
+		pprof.StartCPUProfile(f)
+
+		go func() {
+			c := make(chan os.Signal, 1)
+			signal.Notify(c, os.Interrupt)
+			<-c
+			pprof.StopCPUProfile()
+			os.Exit(0)
+		}()
+	}
+
+	if heapProfile != "" {
+		go codeProfile(heapProfile)
+	}
 
 	if fileconfig == "" {
 		log.Print("ERROR config not set")
@@ -52,26 +75,13 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if profile {
-		go codeProfile()
-	}
-
 	app.Start()
 }
 
-func codeProfile() {
+func codeProfile(heapProfile string) {
 	m := &runtime.MemStats{}
 	tick1m := time.Tick(1 * time.Minute)
 	tick5s := time.Tick(5 * time.Second)
-
-	fCPUProfiling, err := os.Create("profile.prof")
-	if err != nil {
-		panic(err)
-	}
-	pprof.StartCPUProfile(fCPUProfiling)
-	defer func() {
-		pprof.StopCPUProfile()
-	}()
 
 	for {
 		select {
@@ -110,7 +120,7 @@ func codeProfile() {
 
 		case <-tick1m:
 			var fHeapProfiling io.Writer
-			fHeapProfiling, _ = os.Create("profile_heap.prof")
+			fHeapProfiling, _ = os.Create(heapProfile)
 			pprof.WriteHeapProfile(fHeapProfiling)
 			log.Println("~ head saved")
 		}
