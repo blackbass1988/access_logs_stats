@@ -2,8 +2,8 @@ package core_test
 
 import (
 	"github.com/blackbass1988/access_logs_stats/core"
+	"github.com/blackbass1988/access_logs_stats/core/re"
 	"log"
-	"regexp"
 	"testing"
 )
 
@@ -46,7 +46,7 @@ func TestRegexp(t *testing.T) {
 
 	for _, test := range tests {
 
-		rex := regexp.MustCompile(test.regexp)
+		rex := re.MustCompile(test.regexp)
 
 		actualRow, err := core.NewRow(test.rawString, rex)
 		check_test(err, t)

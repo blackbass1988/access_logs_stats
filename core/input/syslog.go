@@ -3,10 +3,10 @@ package input
 import (
 	"bufio"
 	"errors"
+	"github.com/blackbass1988/access_logs_stats/core/re"
 	"io"
 	"log"
 	"net"
-	"regexp"
 	"sync"
 )
 
@@ -216,12 +216,12 @@ func (r *SyslogInputReader) appendToBuffer(byteBuf []byte) bool {
 }
 
 func ParseSyslogDsn(dsn string) (protocol string, listen string, application string, err error) {
-	re, err := regexp.Compile(`(syslog):([a-zA-Z0-9]+):([^/]+)/(\S+)`)
+	r, err := re.Compile(`(syslog):([a-zA-Z0-9]+):([^/]+)/(\S+)`)
 	if err != nil {
 		return
 	}
 
-	matches := re.FindStringSubmatch(dsn)
+	matches := r.FindStringSubmatch(dsn)
 	if len(matches) != 5 {
 		err = INCORRENCT_DSN
 		return

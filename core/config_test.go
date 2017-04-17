@@ -81,8 +81,8 @@ func testConfig(t *testing.T, config core.Config) {
 
 	f := config.Filters[0]
 
-	if f.Matcher.String() != ".+" {
-		t.Errorf("filter. Expected [.+] . Actual [%s]", f.Matcher)
+	if f.String() != ".+" {
+		t.Errorf("filter. Expected [.+] . Actual [%s]", f.String())
 	}
 
 	if f.Prefix != "prefix2_" {
