@@ -28,10 +28,10 @@ func (f *Filter) String() string {
 }
 
 type matcher struct {
-	raw     string
-	isRegex bool
+	raw         string
+	isRegex     bool
 	alwaysMatch bool
-	matcher re.RegExp
+	matcher     re.RegExp
 }
 
 //MatchString matches input string and return true if str was matches with filter and false if not
