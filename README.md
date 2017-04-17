@@ -96,7 +96,6 @@ usage
 configuration
 ---------
 
-```
 
 |field|description|
 |----|------|
