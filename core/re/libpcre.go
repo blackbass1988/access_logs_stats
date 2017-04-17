@@ -12,7 +12,7 @@ type LibPcreRegexp struct {
 
 	currentMatcher *pcre.Matcher
 	expr           string
-	namedGroups []string
+	namedGroups    []string
 }
 
 func newLibPcreRegexp(expr string) (RegExp, error) {
@@ -67,7 +67,7 @@ func getNamedGroupsFromExpression(expr string) []string {
 
 	matches := r.FindAllStringSubmatch(expr, -1)
 
-	namedGroups := make([]string,  len(matches) + 1)
+	namedGroups := make([]string, len(matches)+1)
 
 	for i, m := range matches {
 		namedGroups[i+1] = m[1]
