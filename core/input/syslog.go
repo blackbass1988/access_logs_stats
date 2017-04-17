@@ -15,7 +15,7 @@ const udpSafePackSize = 2048
 var (
 	//ErrorIncorrectDSN says that given incorrect input DSN
 	ErrorIncorrectDSN = errors.New("Incorrect DSN")
-	//ErrorUnknownProtocol says that given unknwon protocol. Not TCP or UDP
+	//ErrorUnknownProtocol says that given unknown protocol. Not TCP or UDP
 	ErrorUnknownProtocol = errors.New("Unknown protocol")
 )
 

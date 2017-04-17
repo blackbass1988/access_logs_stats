@@ -3,8 +3,6 @@ package core
 import (
 	"fmt"
 	"github.com/blackbass1988/access_logs_stats/core/output"
-	_ "github.com/blackbass1988/access_logs_stats/core/output/console"
-	_ "github.com/blackbass1988/access_logs_stats/core/output/zabbix"
 	"sort"
 	"strconv"
 	"strings"

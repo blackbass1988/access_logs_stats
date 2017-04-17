@@ -1,13 +1,15 @@
 package main
 
 import (
-	"flag"
 	"github.com/blackbass1988/access_logs_stats/core"
+	_ "github.com/blackbass1988/access_logs_stats/core/output/console"
+	_ "github.com/blackbass1988/access_logs_stats/core/output/zabbix"
+
+	"flag"
+	"io"
 	"log"
 	"os"
 	"os/signal"
-
-	"io"
 	"runtime"
 	"runtime/pprof"
 	"time"
