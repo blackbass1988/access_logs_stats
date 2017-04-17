@@ -12,6 +12,8 @@ type RegExp interface {
 func Compile(expr string) (RegExp, error) {
 	return newLibPcreRegexp(expr)
 }
+
+//MustCompile returns implementation of RegExp or panic
 func MustCompile(expr string) RegExp {
 	r, err := newLibPcreRegexp(expr)
 

@@ -10,13 +10,17 @@ import (
 	"sync"
 )
 
-const UDP_SAFE_PACK_SIZE = 2048
+const udpSafePackSize = 2048
 
 var (
-	INCORRENCT_DSN   = errors.New("Incorrect DSN")
-	UNKNOWN_PROTOCOL = errors.New("Unknown protocol")
+	//ErrorIncorrectDSN says that given incorrect input DSN
+	ErrorIncorrectDSN = errors.New("Incorrect DSN")
+	//ErrorUnknownProtocol says that given unknwon protocol. Not TCP or UDP
+	ErrorUnknownProtocol = errors.New("Unknown protocol")
 )
 
+//SyslogInputReader implements BufferedReader for reading data from syslog.
+//It's starts syslog server and receive input data
 type SyslogInputReader struct {
 	BufferedReader
 
@@ -56,10 +60,11 @@ func CreateSyslogInputReader(dsn string) (r *SyslogInputReader, err error) {
 }
 
 func (r *SyslogInputReader) parseDsn(dsn string) (err error) {
-	r.protocol, r.listen, r.application, err = ParseSyslogDsn(dsn)
+	r.protocol, r.listen, r.application, err = parseSyslogDsn(dsn)
 	return
 }
 
+//ReadToBuffer implements BufferedReader ReadToBuffer method for SyslogInputReader
 func (r *SyslogInputReader) ReadToBuffer() {
 
 	if r.protocol == "udp" {
@@ -68,6 +73,20 @@ func (r *SyslogInputReader) ReadToBuffer() {
 		r.readToBufferTCP()
 	}
 
+}
+
+//FlushBuffer implements BufferedReader FlushBuffer method for SyslogInputReader
+func (r *SyslogInputReader) FlushBuffer() []byte {
+	r.m.Lock()
+	buffer := r.buffer
+	r.buffer = []byte{}
+	r.m.Unlock()
+	return buffer
+}
+
+//Close implements BufferedReader Close method for SyslogInputReader
+func (r *SyslogInputReader) Close() {
+	r.acceptor.Close()
 }
 
 func (r *SyslogInputReader) readToBufferTCP() {
@@ -84,18 +103,6 @@ func (r *SyslogInputReader) readToBufferUDP() {
 	conn, err := r.acceptor.Accept()
 	check(err)
 	r.handleConnectionUDP(conn)
-}
-
-func (r *SyslogInputReader) FlushBuffer() []byte {
-	r.m.Lock()
-	buffer := r.buffer
-	r.buffer = []byte{}
-	r.m.Unlock()
-	return buffer
-}
-
-func (r *SyslogInputReader) Close() {
-	r.acceptor.Close()
 }
 
 func (r *SyslogInputReader) startServer() (err error) {
@@ -154,7 +161,7 @@ func (r *SyslogInputReader) handleConnectionUDP(conn net.Conn) {
 		err  error
 		b    []byte
 	)
-	b = make([]byte, UDP_SAFE_PACK_SIZE)
+	b = make([]byte, udpSafePackSize)
 	defer conn.Close()
 
 	for {
@@ -203,8 +210,8 @@ func (r *SyslogInputReader) appendToBuffer(byteBuf []byte) bool {
 	//parse message.
 	m, err := r.parser.parseSyslogMsg(string(byteBuf))
 
-	if err == UNKNOWN_INPUT_STRING_FORMAT {
-		log.Println(UNKNOWN_INPUT_STRING_FORMAT, string(byteBuf))
+	if err == ErrorUnknownInputStringFormat {
+		log.Println(ErrorUnknownInputStringFormat, string(byteBuf))
 	}
 	//Filter by application
 	if m.Application != r.application {
@@ -215,7 +222,7 @@ func (r *SyslogInputReader) appendToBuffer(byteBuf []byte) bool {
 	return true
 }
 
-func ParseSyslogDsn(dsn string) (protocol string, listen string, application string, err error) {
+func parseSyslogDsn(dsn string) (protocol string, listen string, application string, err error) {
 	r, err := re.Compile(`(syslog):([a-zA-Z0-9]+):([^/]+)/(\S+)`)
 	if err != nil {
 		return
@@ -223,7 +230,7 @@ func ParseSyslogDsn(dsn string) (protocol string, listen string, application str
 
 	matches := r.FindStringSubmatch(dsn)
 	if len(matches) != 5 {
-		err = INCORRENCT_DSN
+		err = ErrorIncorrectDSN
 		return
 	}
 	protocol = matches[2]
@@ -231,12 +238,13 @@ func ParseSyslogDsn(dsn string) (protocol string, listen string, application str
 	application = matches[4]
 
 	if protocol != "udp" && protocol != "tcp" {
-		err = UNKNOWN_PROTOCOL
+		err = ErrorUnknownProtocol
 	}
 
 	return
 }
 
+//Acceptor is an interface than Can Accept new connection and close it
 type Acceptor interface {
 	Accept() (net.Conn, error)
 	Close() error
@@ -246,10 +254,12 @@ type tcpAcceptor struct {
 	acceptor *net.TCPListener
 }
 
+//Accept accepts new tcp connection
 func (l *tcpAcceptor) Accept() (net.Conn, error) {
 	return l.acceptor.Accept()
 }
 
+//Close closes tcp connection
 func (l *tcpAcceptor) Close() error {
 	return l.acceptor.Close()
 }
@@ -258,10 +268,12 @@ type udpAcceptor struct {
 	acceptor *net.UDPConn
 }
 
+//Accept accepts new udp packet
 func (l *udpAcceptor) Accept() (net.Conn, error) {
 	return l.acceptor, nil
 }
 
+//Close closes udp file descriptor
 func (l *udpAcceptor) Close() error {
 	return l.acceptor.Close()
 }

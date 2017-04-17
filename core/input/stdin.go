@@ -8,6 +8,7 @@ import (
 	"strings"
 )
 
+//StdInputReader implements reading from stdin
 type StdInputReader struct {
 	BufferedReader
 
@@ -16,6 +17,7 @@ type StdInputReader struct {
 	nowait bool
 }
 
+//CreateStdinReader creates new StdInputReader
 func CreateStdinReader(dsn string) (r *StdInputReader, err error) {
 	r = &StdInputReader{}
 	r.buffer = []byte{}
@@ -28,6 +30,7 @@ func CreateStdinReader(dsn string) (r *StdInputReader, err error) {
 	return r, err
 }
 
+//ReadToBuffer implements ReadToBuffer method of BufferedReader for StdInputReader
 func (r *StdInputReader) ReadToBuffer() {
 	var (
 		b   byte
@@ -47,11 +50,13 @@ func (r *StdInputReader) ReadToBuffer() {
 	}
 }
 
+//FlushBuffer implements FlushBuffer method of BufferedReader for StdInputReader
 func (r *StdInputReader) FlushBuffer() []byte {
 	b := r.buffer
 	r.buffer = []byte{}
 	return b
 }
 
+//Close implements Close method of BufferedReader for StdInputReader
 func (r *StdInputReader) Close() {
 }

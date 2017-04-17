@@ -2,6 +2,7 @@ package re
 
 import "regexp"
 
+//NativeRegExp implements RegExp interface with bult-in regexp implementation
 type NativeRegExp struct {
 	RegExp
 	re *regexp.Regexp

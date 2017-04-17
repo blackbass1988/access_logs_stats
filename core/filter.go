@@ -18,13 +18,14 @@ type Filter struct {
 	} `json:"items" yaml:"items"`
 }
 
-//MatchString matches a input string
+//MatchString matches input string and return true if str was matches with filter and false if not
 func (f *Filter) MatchString(str string) bool {
-	return f.Matcher.MatchString(str)
+	return f.Matcher.matchString(str)
 }
 
+//String returns filter's input string
 func (f *Filter) String() string {
-	return f.Matcher.String()
+	return f.Matcher.string()
 }
 
 type matcher struct {
@@ -34,8 +35,7 @@ type matcher struct {
 	matcher     re.RegExp
 }
 
-//MatchString matches input string and return true if str was matches with filter and false if not
-func (m *matcher) MatchString(str string) bool {
+func (m *matcher) matchString(str string) bool {
 
 	if m.alwaysMatch {
 		return true
@@ -46,7 +46,7 @@ func (m *matcher) MatchString(str string) bool {
 	}
 }
 
-func (m *matcher) String() string {
+func (m *matcher) string() string {
 	return m.raw
 }
 
@@ -68,11 +68,13 @@ func newmatcher(str string) (matcher, error) {
 	return m, err
 }
 
+//UnmarshalJSON return new matcher for JSON unmarshaller
 func (m *matcher) UnmarshalJSON(data []byte) (err error) {
 	*m, err = newmatcher(string(data[1 : len(data)-1]))
 	return err
 }
 
+//UnmarshalJSON return new matcher for YAML unmarshaller
 func (m *matcher) UnmarshalYAML(unmarshal func(interface{}) error) (err error) {
 
 	v := ""

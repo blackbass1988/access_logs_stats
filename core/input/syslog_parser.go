@@ -14,7 +14,8 @@ type syslogMessage struct {
 	Message     string
 }
 
-var UNKNOWN_INPUT_STRING_FORMAT = errors.New("UNKNOWN_INPUT_STRING_FORMAT")
+//ErrorUnknownInputStringFormat says that server received invalid string and it can't read it
+var ErrorUnknownInputStringFormat = errors.New("ErrorUnknownInputStringFormat")
 
 func newSyslogParser() (p *syslogParser, err error) {
 	p = new(syslogParser)
@@ -50,7 +51,7 @@ func (s *syslogParser) parseSyslogMsg(str string) (m syslogMessage, err error) {
 		if len(matches) != 0 {
 			m.Priority, m.Date, m.Hostname, m.Application, m.Message = matches[1], matches[2], matches[4], matches[5], matches[6]
 		} else {
-			err = UNKNOWN_INPUT_STRING_FORMAT
+			err = ErrorUnknownInputStringFormat
 		}
 	}
 	return m, err

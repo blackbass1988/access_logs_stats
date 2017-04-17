@@ -6,6 +6,7 @@ import (
 	"regexp"
 )
 
+//LibPcreRegexp implements RegExp interface with libcre
 type LibPcreRegexp struct {
 	RegExp
 	re *pcre.Regexp

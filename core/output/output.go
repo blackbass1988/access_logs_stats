@@ -9,31 +9,30 @@ type output struct {
 
 var outputs = []output{}
 
+//Message is key=value presentation of calculation
 type Message struct {
 	Key   string
 	Value string
 }
 
+//RegisterOutput registers new output
 func RegisterOutput(name string, send func(messages []*Message), init func(params map[string]string)) error {
 	outputs = append(outputs, output{name, send, init, false})
 	return nil
 }
 
+//Output is base struct of log target
 type Output struct {
 	prefix   string
 	messages []*Message
 }
 
-/*
- * set common prefix for all keys
- */
+//SetPrefix sets common prefix for all keys
 func (s *Output) SetPrefix(prefix string) {
 	s.prefix = prefix
 }
 
-/*
- * add message to message pack
- */
+//AddMessage adds message to message pack
 func (s *Output) AddMessage(key string, value string) {
 
 	if len(s.prefix) > 0 {
@@ -45,9 +44,7 @@ func (s *Output) AddMessage(key string, value string) {
 	s.messages = append(s.messages, m)
 }
 
-/*
- * sends message pack by output
- */
+//Send sends message pack by output
 func (s *Output) Send() {
 
 	currentMessages := s.messages
@@ -59,6 +56,7 @@ func (s *Output) Send() {
 	s.messages = []*Message{}
 }
 
+//Init initializes parent outputs
 func (s *Output) Init(senderName string, params map[string]string) {
 	for i, aOutput := range outputs {
 		if aOutput.name == senderName {
