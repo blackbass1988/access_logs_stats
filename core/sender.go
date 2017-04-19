@@ -55,20 +55,16 @@ func (s *Sender) appendIfOk(row *RowEntry) (err error) {
 			if _, ok := s.config.Aggregates[field]; ok {
 				valFloat, err := strconv.ParseFloat(val, 10)
 				checkOrFail(err)
-				s.globalLock.Lock()
 				s.floatsForAggregates[field] = append(s.floatsForAggregates[field], valFloat)
-				s.globalLock.Unlock()
 			}
 
 			//в конфиге указано поле, как поле, по которому считаются
 			// суммы по уникальным значениям
 			if _, ok := s.config.Counts[field]; ok {
-				s.globalLock.Lock()
 				if s.counts[field] == nil {
 					s.counts[field] = make(map[string]uint64)
 				}
 				s.counts[field][val]++
-				s.globalLock.Unlock()
 			}
 		}
 	}
@@ -269,20 +265,22 @@ func (s *SenderCollection) resetData() {
 }
 
 //appendData appends RowEntry to every filter instance from config
-func (s *SenderCollection) appendData(row *RowEntry) error {
-	var err error
-
+func (s *SenderCollection) appendData(row *RowEntry) {
+	var wg sync.WaitGroup
+	wg.Add(len(s.procs))
 	for _, proc := range s.procs {
-		go proc.appendIfOk(row)
+		go func(proc *Sender) {
+			defer wg.Done()
+			proc.appendIfOk(row)
+		}(proc)
 	}
-
-	return err
+	wg.Wait()
 }
 
 func (s *SenderCollection) sendStats() {
 	var wg sync.WaitGroup
+	wg.Add(len(s.procs))
 	for _, proc := range s.procs {
-		wg.Add(1)
 		go func(proc *Sender) {
 			defer wg.Done()
 			proc.sendStats()
