@@ -48,8 +48,6 @@ func (s *Sender) appendIfOk(row *RowEntry) (err error) {
 
 	if s.filter.MatchString(row.Raw) {
 
-		s.globalLock.Lock()
-
 		for field, val := range row.Fields {
 
 			if _, ok := s.config.Aggregates[field]; ok {
@@ -65,10 +63,8 @@ func (s *Sender) appendIfOk(row *RowEntry) (err error) {
 					s.counts[field] = make(map[string]uint64)
 				}
 				s.counts[field][val]++
-
 			}
 		}
-		s.globalLock.Unlock()
 	}
 
 	return err
@@ -267,20 +263,22 @@ func (s *SenderCollection) resetData() {
 }
 
 //appendData appends RowEntry to every filter instance from config
-func (s *SenderCollection) appendData(row *RowEntry) error {
-	var err error
-
+func (s *SenderCollection) appendData(row *RowEntry) {
+	var wg sync.WaitGroup
+	wg.Add(len(s.procs))
 	for _, proc := range s.procs {
-		go proc.appendIfOk(row)
+		go func(proc *Sender) {
+			defer wg.Done()
+			proc.appendIfOk(row)
+		}(proc)
 	}
-
-	return err
+	wg.Wait()
 }
 
 func (s *SenderCollection) sendStats() {
 	var wg sync.WaitGroup
+	wg.Add(len(s.procs))
 	for _, proc := range s.procs {
-		wg.Add(1)
 		go func(proc *Sender) {
 			defer wg.Done()
 			proc.sendStats()

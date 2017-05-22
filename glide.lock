@@ -1,6 +1,8 @@
-hash: fe0ebf6456ec66510298cb2dcec0cda6e71413f69ad5ede745dd752ae6099aac
-updated: 2017-04-14T18:36:09.517494479+10:00
+hash: da9b55a01fb1d577d52c1bd533b9e08a10dd31e4c99bc9eb4c52fcf6f057afd7
+updated: 2017-05-22T20:47:36.533799596+10:00
 imports:
+- name: github.com/blackbass1988/yet_another_pprof_wrapper
+  version: ef2869d5389c6122f510f76a86d29ae165720abc
 - name: github.com/glenn-brown/golang-pkg-pcre
   version: 48bb82a8b8ceea98f4e97825b43870f6ba1970d6
   subpackages:
