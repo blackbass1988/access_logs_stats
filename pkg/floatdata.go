@@ -1,4 +1,4 @@
-package core
+package pkg
 
 //Float64Data extends []float64 with data analyze functions
 type Float64Data []float64

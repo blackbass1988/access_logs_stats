@@ -10,7 +10,7 @@ BRANCH=`git rev-parse --abbrev-ref HEAD`
 #LDFLAGS=-s -w -X main.buildTime=${BUILD_TIME}
 LDFLAGS=-X main.buildTime=${BUILD_TIME} -X main.commit=${COMMIT} -X main.branch=${BRANCH}
 
-DEBUG= -X github.com/blackbass1988/access_logs_stats/core/debug=1
+DEBUG= -X github.com/blackbass1988/access_logs_stats/pkg/debug=1
 
 all: fmt test build
 
@@ -22,7 +22,7 @@ fmt:
 	go fmt ./...
 
 test:
-	go test ./core/...
+	go test ./pkg/...
 
 build:
 	go build -ldflags "${LDFLAGS}" ./cmd/...

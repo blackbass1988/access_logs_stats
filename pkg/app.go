@@ -1,11 +1,11 @@
-package core
+package pkg
 
 import (
 	"bufio"
 	"bytes"
 	"errors"
-	"github.com/blackbass1988/access_logs_stats/core/input"
-	"github.com/blackbass1988/access_logs_stats/core/re"
+	"github.com/blackbass1988/access_logs_stats/pkg/input"
+	"github.com/blackbass1988/access_logs_stats/pkg/re"
 	"io"
 	"log"
 	"os"

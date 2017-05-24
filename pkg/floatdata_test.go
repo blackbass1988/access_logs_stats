@@ -1,7 +1,7 @@
-package core_test
+package pkg_test
 
 import (
-	"github.com/blackbass1988/access_logs_stats/core"
+	"github.com/blackbass1988/access_logs_stats/pkg"
 	"sort"
 	"testing"
 	"time"
@@ -10,7 +10,7 @@ import (
 func TestFloatData(t *testing.T) {
 
 	numbers := []float64{3, 1.0, 2}
-	floatNumber := core.Float64Data(numbers)
+	floatNumber := pkg.Float64Data(numbers)
 	sort.Sort(floatNumber)
 
 	if floatNumber[0] != 1 || floatNumber[1] != 2 || floatNumber[2] != 3 {
@@ -68,7 +68,7 @@ func TestLenDivDuration(t *testing.T) {
 	for _, test := range tests {
 		duration, _ := time.ParseDuration(test.duration)
 		numbers := test.numbers
-		floatNumber := core.Float64Data(numbers)
+		floatNumber := pkg.Float64Data(numbers)
 		if floatNumber.ItemsPerSeconds(duration.Seconds()) != test.expected {
 			t.Error("ItemsPerDuration must ", test.expected,
 				" but was ", floatNumber.ItemsPerSeconds(duration.Seconds()))

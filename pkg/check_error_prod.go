@@ -1,6 +1,6 @@
 //+build !devel
 
-package core
+package pkg
 
 import (
 	"log"

@@ -1,6 +1,6 @@
 //+build devel
 
-package core
+package pkg
 
 func check(err error) {
 	if err != nil {

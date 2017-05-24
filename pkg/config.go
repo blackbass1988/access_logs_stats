@@ -1,9 +1,9 @@
-package core
+package pkg
 
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/blackbass1988/access_logs_stats/core/re"
+	"github.com/blackbass1988/access_logs_stats/pkg/re"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"

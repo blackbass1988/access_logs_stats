@@ -1,13 +1,13 @@
-package core_test
+package pkg_test
 
 import (
-	"github.com/blackbass1988/access_logs_stats/core"
+	"github.com/blackbass1988/access_logs_stats/pkg"
 	"testing"
 )
 
 func TestYamlConfig(t *testing.T) {
 	filepath := "../config.yaml.example"
-	config, err := core.NewConfig(filepath)
+	config, err := pkg.NewConfig(filepath)
 
 	if err != nil {
 		t.Fatal(err)
@@ -19,7 +19,7 @@ func TestYamlConfig(t *testing.T) {
 func TestJsonConfig(t *testing.T) {
 	filepath := "../config.json.example"
 
-	config, err := core.NewConfig(filepath)
+	config, err := pkg.NewConfig(filepath)
 
 	if err != nil {
 		t.Fatal(err)
@@ -28,7 +28,7 @@ func TestJsonConfig(t *testing.T) {
 
 }
 
-func testConfig(t *testing.T, config core.Config) {
+func testConfig(t *testing.T, config pkg.Config) {
 
 	if config.InputDsn != "file:foo.txt" {
 		t.Error(
@@ -85,7 +85,7 @@ func testConfig(t *testing.T, config core.Config) {
 	checkConfig(t, config)
 }
 
-func checkFilter(t *testing.T, f *core.Filter) {
+func checkFilter(t *testing.T, f *pkg.Filter) {
 	if f.String() != ".+" {
 		t.Errorf("filter. Expected [.+] . Actual [%s]", f.String())
 	}
@@ -108,7 +108,7 @@ func checkFilter(t *testing.T, f *core.Filter) {
 	}
 }
 
-func checkConfig(t *testing.T, config core.Config) {
+func checkConfig(t *testing.T, config pkg.Config) {
 
 	if len(config.Counts) != 2 {
 		t.Error("config.Counts. Expected 2. Actual ", len(config.Counts))

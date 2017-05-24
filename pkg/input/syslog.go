@@ -3,7 +3,7 @@ package input
 import (
 	"bufio"
 	"errors"
-	"github.com/blackbass1988/access_logs_stats/core/re"
+	"github.com/blackbass1988/access_logs_stats/pkg/re"
 	"io"
 	"log"
 	"net"

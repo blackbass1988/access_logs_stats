@@ -1,7 +1,7 @@
-package core
+package pkg
 
 import (
-	"github.com/blackbass1988/access_logs_stats/core/re"
+	"github.com/blackbass1988/access_logs_stats/pkg/re"
 	"log"
 	"strings"
 )

@@ -1,7 +1,7 @@
 package console
 
 import (
-	"github.com/blackbass1988/access_logs_stats/core/output"
+	"github.com/blackbass1988/access_logs_stats/pkg/output"
 	"log"
 )
 

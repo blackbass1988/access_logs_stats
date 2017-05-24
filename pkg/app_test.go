@@ -1,8 +1,8 @@
-package core_test
+package pkg_test
 
 import (
-	"github.com/blackbass1988/access_logs_stats/core"
-	"github.com/blackbass1988/access_logs_stats/core/re"
+	"github.com/blackbass1988/access_logs_stats/pkg"
+	"github.com/blackbass1988/access_logs_stats/pkg/re"
 	"log"
 	"testing"
 )
@@ -48,7 +48,7 @@ func TestRegexp(t *testing.T) {
 
 		rex := re.MustCompile(test.regexp)
 
-		actualRow, err := core.NewRow(test.rawString, rex)
+		actualRow, err := pkg.NewRow(test.rawString, rex)
 		check_test(err, t)
 
 		if actualRow.Raw != test.rawString {

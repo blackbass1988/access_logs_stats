@@ -5,9 +5,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/blackbass1988/access_logs_stats/core"
-	_ "github.com/blackbass1988/access_logs_stats/core/output/console"
-	_ "github.com/blackbass1988/access_logs_stats/core/output/zabbix"
+	"github.com/blackbass1988/access_logs_stats/pkg"
+	_ "github.com/blackbass1988/access_logs_stats/pkg/output/console"
+	_ "github.com/blackbass1988/access_logs_stats/pkg/output/zabbix"
 	prof "github.com/blackbass1988/yet_another_pprof_wrapper"
 )
 
@@ -64,13 +64,13 @@ func main() {
 		os.Exit(2)
 	}
 
-	config, err := core.NewConfig(fileconfig)
+	config, err := pkg.NewConfig(fileconfig)
 	if err != nil {
 		log.Fatal(err)
 	}
 	config.ExitAfterOneTick = exitAfterOneTick
 
-	app, err := core.NewApp(config)
+	app, err := pkg.NewApp(config)
 	if err != nil {
 		log.Fatal(err)
 	}
