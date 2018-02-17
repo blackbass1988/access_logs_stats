@@ -1,8 +1,9 @@
 package pkg_test
 
 import (
-	"github.com/blackbass1988/access_logs_stats/pkg"
 	"testing"
+
+	"github.com/blackbass1988/access_logs_stats/pkg"
 )
 
 func TestYamlConfig(t *testing.T) {

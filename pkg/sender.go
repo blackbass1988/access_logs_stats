@@ -2,11 +2,12 @@ package pkg
 
 import (
 	"fmt"
-	"github.com/blackbass1988/access_logs_stats/pkg/output"
 	"sort"
 	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/blackbass1988/access_logs_stats/pkg/output"
 )
 
 //Sender sends data to output. omg omg omg

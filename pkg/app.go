@@ -4,12 +4,13 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
-	"github.com/blackbass1988/access_logs_stats/pkg/input"
-	"github.com/blackbass1988/access_logs_stats/pkg/re"
 	"io"
 	"log"
 	"os"
 	"time"
+
+	"github.com/blackbass1988/access_logs_stats/pkg/input"
+	"github.com/blackbass1988/access_logs_stats/pkg/re"
 )
 
 var (

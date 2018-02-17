@@ -1,10 +1,11 @@
 package pkg_test
 
 import (
-	"github.com/blackbass1988/access_logs_stats/pkg"
-	"github.com/blackbass1988/access_logs_stats/pkg/re"
 	"log"
 	"testing"
+
+	"github.com/blackbass1988/access_logs_stats/pkg"
+	"github.com/blackbass1988/access_logs_stats/pkg/re"
 )
 
 type testcase struct {

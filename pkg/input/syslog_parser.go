@@ -2,6 +2,7 @@ package input
 
 import (
 	"errors"
+
 	"github.com/blackbass1988/access_logs_stats/pkg/re"
 )
 

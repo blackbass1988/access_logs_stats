@@ -1,8 +1,9 @@
 package console
 
 import (
-	"github.com/blackbass1988/access_logs_stats/pkg/output"
 	"log"
+
+	"github.com/blackbass1988/access_logs_stats/pkg/output"
 )
 
 var c *console

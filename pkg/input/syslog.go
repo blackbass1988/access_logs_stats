@@ -3,11 +3,12 @@ package input
 import (
 	"bufio"
 	"errors"
-	"github.com/blackbass1988/access_logs_stats/pkg/re"
 	"io"
 	"log"
 	"net"
 	"sync"
+
+	"github.com/blackbass1988/access_logs_stats/pkg/re"
 )
 
 const udpSafePackSize = 2048

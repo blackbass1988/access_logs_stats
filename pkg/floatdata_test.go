@@ -1,10 +1,11 @@
 package pkg_test
 
 import (
-	"github.com/blackbass1988/access_logs_stats/pkg"
 	"sort"
 	"testing"
 	"time"
+
+	"github.com/blackbass1988/access_logs_stats/pkg"
 )
 
 func TestFloatData(t *testing.T) {

@@ -1,9 +1,10 @@
 package pkg
 
 import (
-	"github.com/blackbass1988/access_logs_stats/pkg/re"
 	"log"
 	"strings"
+
+	"github.com/blackbass1988/access_logs_stats/pkg/re"
 )
 
 var regularExpressionRex = re.MustCompile(`[\[\]{}+*\\()]`)

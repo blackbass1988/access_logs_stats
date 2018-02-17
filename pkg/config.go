@@ -3,12 +3,13 @@ package pkg
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/blackbass1988/access_logs_stats/pkg/re"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/blackbass1988/access_logs_stats/pkg/re"
+	"gopkg.in/yaml.v2"
 )
 
 //Config base struct of parser config

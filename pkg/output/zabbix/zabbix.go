@@ -4,11 +4,12 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/json"
-	"github.com/blackbass1988/access_logs_stats/pkg/output"
 	"io"
 	"log"
 	"net"
 	"os"
+
+	"github.com/blackbass1988/access_logs_stats/pkg/output"
 )
 
 var (
