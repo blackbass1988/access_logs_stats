@@ -3,11 +3,12 @@ package input
 import (
 	"bufio"
 	"errors"
-	"github.com/blackbass1988/access_logs_stats/pkg/re"
 	"io"
 	"log"
 	"net"
 	"sync"
+
+	"github.com/blackbass1988/access_logs_stats/pkg/re"
 )
 
 const udpSafePackSize = 2048
@@ -24,12 +25,12 @@ var (
 type SyslogInputReader struct {
 	BufferedReader
 
-	m      sync.Mutex
-	buffer []byte
+	m sync.Mutex
 
 	protocol    string
 	listen      string
 	application string
+	lineChannel chan<- string
 
 	acceptor Acceptor
 
@@ -44,7 +45,6 @@ type SyslogInputReader struct {
 func CreateSyslogInputReader(dsn string) (r *SyslogInputReader, err error) {
 
 	r = &SyslogInputReader{}
-	r.buffer = []byte{}
 	r.parser, err = newSyslogParser()
 	check(err)
 	//read dsn
@@ -64,24 +64,16 @@ func (r *SyslogInputReader) parseDsn(dsn string) (err error) {
 	return
 }
 
-//ReadToBuffer implements BufferedReader ReadToBuffer method for SyslogInputReader
-func (r *SyslogInputReader) ReadToBuffer() {
+//ReadToChannel implements BufferedReader ReadToBuffer method for SyslogInputReader
+func (r *SyslogInputReader) ReadToChannel(lineChannel chan<- string) {
 
+	r.lineChannel = lineChannel
 	if r.protocol == "udp" {
 		r.readToBufferUDP()
 	} else {
 		r.readToBufferTCP()
 	}
 
-}
-
-//FlushBuffer implements BufferedReader FlushBuffer method for SyslogInputReader
-func (r *SyslogInputReader) FlushBuffer() []byte {
-	r.m.Lock()
-	buffer := r.buffer
-	r.buffer = []byte{}
-	r.m.Unlock()
-	return buffer
 }
 
 //Close implements BufferedReader Close method for SyslogInputReader
@@ -172,7 +164,7 @@ func (r *SyslogInputReader) handleConnectionUDP(conn net.Conn) {
 		bytesBuf := b[0:read]
 		r.m.Lock()
 		if r.appendToBuffer(bytesBuf) {
-			r.buffer = append(r.buffer, '\n')
+			r.lineChannel <- string('\n')
 		}
 		r.m.Unlock()
 		//log.Println(string(r.buffer))
@@ -188,7 +180,7 @@ func (r *SyslogInputReader) handleConnectionTCP(conn net.Conn) {
 		if err == io.EOF {
 			r.m.Lock()
 			if r.appendToBuffer(bytesBuf) {
-				r.buffer = append(r.buffer, '\n')
+				r.lineChannel <- string('\n')
 			}
 			r.m.Unlock()
 			break
@@ -218,7 +210,7 @@ func (r *SyslogInputReader) appendToBuffer(byteBuf []byte) bool {
 		return false
 	}
 
-	r.buffer = append(r.buffer, m.Message...)
+	r.lineChannel <- string(m.Message)
 	return true
 }
 

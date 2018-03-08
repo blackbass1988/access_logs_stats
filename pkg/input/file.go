@@ -21,8 +21,6 @@ type FileInputReader struct {
 	fileReader *bufio.Reader
 
 	m sync.Mutex
-
-	buffer []byte
 }
 
 //CreateFileReader create new FileInputReader
@@ -30,7 +28,6 @@ func CreateFileReader(dsn string) (r *FileInputReader, err error) {
 	filename := strings.Replace(dsn, "file:", "", 1)
 
 	r = &FileInputReader{}
-	r.buffer = []byte{}
 	r.openFile(filename)
 	r.file.Seek(0, 2)
 
@@ -44,8 +41,8 @@ func (r *FileInputReader) Close() {
 	r.file.Close()
 }
 
-//ReadToBuffer implements ReadToBuffer method of BufferedReader for FileInputReader
-func (r *FileInputReader) ReadToBuffer() {
+//ReadToChannel read bytes and save to lineChannel as string
+func (r *FileInputReader) ReadToChannel(lineChannel chan<- string) {
 	log.Println("reading...")
 	for {
 		r.m.Lock()
@@ -57,19 +54,8 @@ func (r *FileInputReader) ReadToBuffer() {
 		} else if err != nil {
 			check(err)
 		}
-		r.m.Lock()
-		r.buffer = append(r.buffer, bytesBuf...)
-		r.m.Unlock()
+		lineChannel <- string(bytesBuf)
 	}
-}
-
-//FlushBuffer implements FlushBuffer method of BufferedReader for FileInputReader
-func (r *FileInputReader) FlushBuffer() []byte {
-	r.m.Lock()
-	buffer := r.buffer
-	r.buffer = []byte{}
-	r.m.Unlock()
-	return buffer
 }
 
 func (r *FileInputReader) openFile(filename string) {

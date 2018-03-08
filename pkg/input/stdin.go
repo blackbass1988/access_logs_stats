@@ -13,14 +13,12 @@ type StdInputReader struct {
 	BufferedReader
 
 	reader *bufio.Reader
-	buffer []byte
 	nowait bool
 }
 
 //CreateStdinReader creates new StdInputReader
 func CreateStdinReader(dsn string) (r *StdInputReader, err error) {
 	r = &StdInputReader{}
-	r.buffer = []byte{}
 
 	if option := strings.Replace(dsn, "stdin:", "", 1); option == "nowait" || option == "" {
 		r.nowait = true
@@ -30,31 +28,25 @@ func CreateStdinReader(dsn string) (r *StdInputReader, err error) {
 	return r, err
 }
 
-//ReadToBuffer implements ReadToBuffer method of BufferedReader for StdInputReader
-func (r *StdInputReader) ReadToBuffer() {
+//ReadToChannel implements ReadToChannel
+func (r *StdInputReader) ReadToChannel(lineChannel chan<- string) {
 	var (
-		b   byte
+		b   []byte
 		err error
 	)
+
 	r.reader = bufio.NewReader(os.Stdin)
 
 	for {
-		b, err = r.reader.ReadByte()
+		b, err = r.reader.ReadBytes('\n')
 		if err != nil {
 			if err == io.EOF {
 				break
 			}
 		} else {
-			r.buffer = append(r.buffer, b)
+			lineChannel <- string(b)
 		}
 	}
-}
-
-//FlushBuffer implements FlushBuffer method of BufferedReader for StdInputReader
-func (r *StdInputReader) FlushBuffer() []byte {
-	b := r.buffer
-	r.buffer = []byte{}
-	return b
 }
 
 //Close implements Close method of BufferedReader for StdInputReader

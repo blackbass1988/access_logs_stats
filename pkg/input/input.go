@@ -8,8 +8,7 @@ import (
 
 //BufferedReader describes interface of implementations
 type BufferedReader interface {
-	ReadToBuffer()
-	FlushBuffer() []byte
+	ReadToChannel(lineChannel chan<- string)
 	Close()
 }
 

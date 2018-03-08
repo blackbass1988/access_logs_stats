@@ -2,14 +2,13 @@ package pkg
 
 import (
 	"bufio"
-	"bytes"
 	"errors"
-	"github.com/blackbass1988/access_logs_stats/pkg/input"
-	"github.com/blackbass1988/access_logs_stats/pkg/re"
-	"io"
 	"log"
 	"os"
 	"time"
+
+	"github.com/blackbass1988/access_logs_stats/pkg/input"
+	"github.com/blackbass1988/access_logs_stats/pkg/re"
 )
 
 var (
@@ -80,20 +79,20 @@ func (a *App) Start() {
 		a.ir.Close()
 	}()
 
-	if a.config.ExitAfterOneTick {
-		a.ir.ReadToBuffer()
-		a.processBufferSync <- true
-		a.processBuffer()
+	lineChannel := make(chan string)
+	go a.appendLine(lineChannel)
 
+	if a.config.ExitAfterOneTick {
+		a.processBufferSync <- true
+		a.senderCollection.sendStats()
 	} else {
 		//read to buffer in background
-		go a.ir.ReadToBuffer()
+		go a.ir.ReadToChannel(lineChannel)
 
 		for {
 			select {
 			case <-tick:
-				a.processBufferSync <- true
-				go a.processBuffer()
+				go a.senderCollection.sendStats()
 			}
 		}
 	}
@@ -114,37 +113,16 @@ func (a *App) init() {
 	a.senderCollection = NewSenderCollection(&a.config)
 }
 
-func (a *App) processBuffer() {
-
+func (a *App) appendLine(linesChannel <-chan string) {
 	var (
-		rawString  string
-		err        error
-		lastString string
+		rawString string
+		err       error
+		logRow    *RowEntry
 	)
-	log.Println("[processBuffer] start")
-
-	buffer := a.ir.FlushBuffer()
-
-	<-a.processBufferSync
-
-	log.Println("[processBuffer] buffer read done")
-
-	byteReader := bytes.NewReader(buffer)
-	bufReader := bufio.NewReader(byteReader)
-
-	a.senderCollection.resetData()
-
-	log.Println("[processBuffer] resetData")
-
 	for {
-		rawString, err = bufReader.ReadString('\n')
-		if err == io.EOF {
-			break
-		} else if err != nil {
-			checkOrFail(err)
-		}
+		rawString = <-linesChannel
+		logRow, err = NewRow(rawString, a.config.Rex)
 
-		logRow, err := NewRow(rawString, a.config.Rex)
 		if err != nil && err == errEmptyResult {
 			log.Println(err, rawString)
 			continue
@@ -152,11 +130,5 @@ func (a *App) processBuffer() {
 		checkOrFail(err)
 
 		a.senderCollection.appendData(logRow)
-		lastString = rawString
 	}
-	log.Println("[processBuffer] buffer append done")
-	log.Println(lastString)
-
-	go a.senderCollection.sendStats()
-
 }
