@@ -41,6 +41,7 @@ func (r *StdInputReader) ReadToChannel(lineChannel chan<- string) {
 		b, err = r.reader.ReadBytes('\n')
 		if err != nil {
 			if err == io.EOF {
+				close(lineChannel)
 				break
 			}
 		} else {

@@ -50,7 +50,7 @@ func (s *Output) Send() {
 	currentMessages := s.messages
 	for _, aOutput := range outputs {
 		if aOutput.enabled {
-			go aOutput.send(currentMessages)
+			aOutput.send(currentMessages)
 		}
 	}
 	s.messages = []*Message{}

@@ -81,7 +81,7 @@ func (s *Sender) sendStats() (err error) {
 		}
 	}
 	s.globalLock.Unlock()
-	go s.output.Send()
+	s.output.Send()
 
 	return err
 }

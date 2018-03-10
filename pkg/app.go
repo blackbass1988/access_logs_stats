@@ -34,8 +34,6 @@ type App struct {
 	ir               input.BufferedReader
 
 	fileReader *bufio.Reader
-
-	processBufferSync chan bool
 }
 
 //NewApp creates new parser
@@ -80,14 +78,14 @@ func (a *App) Start() {
 	}()
 
 	lineChannel := make(chan string)
-	go a.appendLine(lineChannel)
+	go a.ir.ReadToChannel(lineChannel)
 
 	if a.config.ExitAfterOneTick {
-		a.processBufferSync <- true
+		a.appendLine(lineChannel)
 		a.senderCollection.sendStats()
 	} else {
+		go a.appendLine(lineChannel)
 		//read to buffer in background
-		go a.ir.ReadToChannel(lineChannel)
 
 		for {
 			select {
@@ -108,7 +106,6 @@ func (a *App) stop() {
 }
 
 func (a *App) init() {
-	a.processBufferSync = make(chan bool, 1)
 	a.buffer = []byte{}
 	a.senderCollection = NewSenderCollection(&a.config)
 }
@@ -118,13 +115,18 @@ func (a *App) appendLine(linesChannel <-chan string) {
 		rawString string
 		err       error
 		logRow    *RowEntry
+		more      bool
 	)
 	for {
-		rawString = <-linesChannel
+		rawString, more = <-linesChannel
+
+		if !more {
+			break
+		}
+
 		logRow, err = NewRow(rawString, a.config.Rex)
 
 		if err != nil && err == errEmptyResult {
-			log.Println(err, rawString)
 			continue
 		}
 		checkOrFail(err)
