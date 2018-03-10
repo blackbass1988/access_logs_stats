@@ -2,11 +2,12 @@ package pkg
 
 import (
 	"fmt"
-	"github.com/blackbass1988/access_logs_stats/pkg/output"
 	"sort"
 	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/blackbass1988/access_logs_stats/pkg/output"
 )
 
 //Sender sends data to output. omg omg omg
@@ -83,6 +84,25 @@ func (s *Sender) sendStats() (err error) {
 	go s.output.Send()
 
 	return err
+}
+
+//NewSender create new sender
+func NewSender(filter *Filter, config *Config) (*Sender, error) {
+	sender := new(Sender)
+	sender.filter = filter
+	sender.config = config
+
+	sender.output = new(output.Output)
+
+	if len(filter.Prefix) > 0 {
+		sender.output.SetPrefix(filter.Prefix)
+	}
+
+	for _, s := range config.Outputs {
+		sender.output.Init(s.Type, s.Settings)
+	}
+
+	return sender, nil
 }
 
 func (s *Sender) appendToOutput(field string, metric string) {
@@ -212,77 +232,4 @@ func (s *Sender) getPeriodInSeconds() float64 {
 		s.periodInSeconds = s.config.Period.Seconds()
 	}
 	return s.periodInSeconds
-}
-
-//NewSender create new sender
-func NewSender(filter *Filter, config *Config) (*Sender, error) {
-	sender := new(Sender)
-	sender.filter = filter
-	sender.config = config
-
-	sender.output = new(output.Output)
-
-	if len(filter.Prefix) > 0 {
-		sender.output.SetPrefix(filter.Prefix)
-	}
-
-	for _, s := range config.Outputs {
-		sender.output.Init(s.Type, s.Settings)
-	}
-
-	return sender, nil
-}
-
-//SenderCollection is a collection of Senders
-type SenderCollection struct {
-	procs  []*Sender
-	config *Config
-}
-
-//NewSenderCollection create SenderCollection of Senders
-func NewSenderCollection(config *Config) *SenderCollection {
-	subProcesses := new(SenderCollection)
-
-	processes := []*Sender{}
-	for _, f := range config.Filters {
-		sp, err := NewSender(f, config)
-		checkOrFail(err)
-		processes = append(processes, sp)
-	}
-
-	subProcesses.procs = processes
-	subProcesses.config = config
-	subProcesses.resetData()
-	return subProcesses
-}
-
-func (s *SenderCollection) resetData() {
-	for _, proc := range s.procs {
-		proc.resetData()
-	}
-}
-
-//appendData appends RowEntry to every filter instance from config
-func (s *SenderCollection) appendData(row *RowEntry) {
-	var wg sync.WaitGroup
-	wg.Add(len(s.procs))
-	for _, proc := range s.procs {
-		go func(proc *Sender) {
-			defer wg.Done()
-			proc.appendIfOk(row)
-		}(proc)
-	}
-	wg.Wait()
-}
-
-func (s *SenderCollection) sendStats() {
-	var wg sync.WaitGroup
-	wg.Add(len(s.procs))
-	for _, proc := range s.procs {
-		go func(proc *Sender) {
-			defer wg.Done()
-			proc.sendStats()
-		}(proc)
-	}
-	wg.Wait()
 }

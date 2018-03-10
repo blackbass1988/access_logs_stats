@@ -30,7 +30,6 @@ func CreateFileReader(dsn string) (r *FileInputReader, err error) {
 	r = &FileInputReader{}
 	r.openFile(filename)
 	r.file.Seek(0, 2)
-
 	go r.checkFile()
 
 	return r, err
