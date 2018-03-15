@@ -4,6 +4,7 @@ import (
 	"flag"
 	"log"
 	"os"
+	"time"
 
 	"github.com/blackbass1988/access_logs_stats/pkg"
 	_ "github.com/blackbass1988/access_logs_stats/pkg/output/console"
@@ -51,11 +52,19 @@ func main() {
 	flag.Parse()
 
 	if cpuProfile != "" {
-		go prof.ProfileCpu(cpuProfile)
+		cWriter, err := os.Create(cpuProfile)
+		if err != nil {
+			panic(err)
+		}
+		go prof.ProfileCpu(cWriter)
 	}
 
 	if heapProfile != "" {
-		go prof.ProfileMemory(heapProfile)
+		mWriter, err := os.Create(heapProfile)
+		if err != nil {
+			panic(err)
+		}
+		go prof.ProfileMemory(mWriter, 10*time.Second, true)
 	}
 
 	if fileconfig == "" {
