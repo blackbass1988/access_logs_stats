@@ -76,7 +76,7 @@ func (z *zabbix) send(messages []*output.Message) {
 	buf.Write(jsonBytes)
 	_, err = z.conn.Write(buf.Bytes())
 	if err != nil {
-		log.Println("zabbix write error:", err)
+		log.Println("zabbix socket write error:", err)
 	}
 
 	//read response
@@ -86,7 +86,7 @@ func (z *zabbix) send(messages []*output.Message) {
 		_, err := z.conn.Read(tmp)
 		if err != nil {
 			if err != io.EOF {
-				log.Print(err)
+				log.Print("zabbix socket read error:", err)
 			}
 			break
 		}
