@@ -4,11 +4,12 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/json"
-	"github.com/blackbass1988/access_logs_stats/pkg/output"
 	"io"
 	"log"
 	"net"
 	"os"
+
+	"github.com/blackbass1988/access_logs_stats/pkg/output"
 )
 
 var (
@@ -63,7 +64,7 @@ func (z *zabbix) send(messages []*output.Message) {
 	//send to server
 	z.conn, err = net.Dial("tcp4", z.zabbixHost+":"+z.zabbixPort)
 	if err != nil {
-		log.Println(err)
+		log.Println("zabbix connect error:", err)
 		return
 	}
 	defer z.conn.Close()
@@ -75,8 +76,7 @@ func (z *zabbix) send(messages []*output.Message) {
 	buf.Write(jsonBytes)
 	_, err = z.conn.Write(buf.Bytes())
 	if err != nil {
-		log.Fatal(err)
-		return
+		log.Println("zabbix write error:", err)
 	}
 
 	//read response
