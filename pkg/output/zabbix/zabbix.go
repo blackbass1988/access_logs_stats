@@ -57,7 +57,7 @@ func (z *zabbix) send(messages []*output.Message) {
 	m := message{"sender data", d}
 	jsonBytes, err := json.Marshal(m)
 	if err != nil {
-		log.Println(err)
+		log.Println("json marshal error:", err)
 		return
 	}
 
