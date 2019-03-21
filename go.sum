@@ -1,0 +1,10 @@
+github.com/blackbass1988/yet_another_pprof_wrapper v0.0.0-20170521064201-ef2869d5389c h1:Uxm0w9+zFIeTKuNhpSKkHUkmEGDWHsiSbr1q8raBj6A=
+github.com/blackbass1988/yet_another_pprof_wrapper v0.0.0-20170521064201-ef2869d5389c/go.mod h1:i8OEnE3Le3vYmj+OCPaZV9qgdTDqtiLpEDt3hsw4gfs=
+github.com/blackbass1988/yet_another_pprof_wrapper v0.0.0-20171221123936-d0534355fec0 h1:bpSMc7RA40Cj5puV43kwfzgp4bQdY16AdMDvIPheMn8=
+github.com/blackbass1988/yet_another_pprof_wrapper v0.0.0-20171221123936-d0534355fec0/go.mod h1:i8OEnE3Le3vYmj+OCPaZV9qgdTDqtiLpEDt3hsw4gfs=
+github.com/glenn-brown/golang-pkg-pcre v0.0.0-20120522223659-48bb82a8b8ce h1:MS/JOOAHf4U2iKl8+1+vzUcG9t9ru1hnZJ9NEBDvMnY=
+github.com/glenn-brown/golang-pkg-pcre v0.0.0-20120522223659-48bb82a8b8ce/go.mod h1:5385NDJ+Gt5loLrAlc8Rr5lKA1L5BE5O94jfdwEX9kg=
+gopkg.in/check.v1 v1.0.0-20161208181325-20d25e280405 h1:829vOVxxusYHC+IqBtkX5mbKtsY9fheQiQn0MZRVLfQ=
+gopkg.in/check.v1 v1.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
+gopkg.in/yaml.v2 v2.0.0-20170407172122-cd8b52f8269e h1:o/mfNjxpTLivuKEfxzzwrJ8PmulH2wEp7t713uMwKAA=
+gopkg.in/yaml.v2 v2.0.0-20170407172122-cd8b52f8269e/go.mod h1:JAlM8MvJe8wmxCU4Bli9HhUf9+ttbYbLASfIpnQbh74=
