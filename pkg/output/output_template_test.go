@@ -17,37 +17,29 @@ func TestTemplateWithoutRequiredVars(t *testing.T) {
 	if err == nil {
 		t.Errorf("Must be error, but was nil")
 	}
+
+	if err != nil && err.Error() != "\"${metric}\" not found in [${field}.hello.world]" {
+		t.Errorf("Invalid error: [%s]", err)
+	}
+
 }
 
 
 func TestGoodTemplate(t *testing.T) {
-	metric := "cps_200"
 	field := "count"
+	metric := "cps_200"
 	expectedString := "count.cps_200"
 
 	err, template := output.NewTempate("${field}.${metric}")
 	if err != nil {
-		t.Errorf("Error must be nil, [%s] was", err)
+		t.Errorf("Error must be nil, was: [%s]", err.Error())
+		t.FailNow()
 	}
 
 	err, actualString := template.Process(field, metric, nil)
 
 	if expectedString != actualString {
-		t.Errorf("String must be [%s], [%s] was", expectedString, actualString)
-	}
-}
-
-
-func TestGoodTemplateWithoutPayloadButInTemplateItWas(t *testing.T) {
-	metric := "cps_200"
-	field := "count"
-
-	err, template := output.NewTempate("${field}.${metric}:${payload[field]}")
-
-	err, _ = template.Process(field, metric, nil)
-
-	if err == nil {
-		t.Errorf("Must be error, but was nil")
+		t.Errorf("String must be >>%s<<, was: >>%s<<", expectedString, actualString)
 	}
 }
 
@@ -59,7 +51,7 @@ func TestWithPayload(t *testing.T) {
 	payload["host"] = "localhost"
 
 
-	err, template := output.NewTempate ("${metric}[${payload[host]},${field}]")
+	err, template := output.NewTempate ("${metric}[${host},${field}]")
 	if err != nil {
 		t.Errorf("Error must be nil, [%s] was", err)
 	}
@@ -69,5 +61,4 @@ func TestWithPayload(t *testing.T) {
 	if expectedString != actualString {
 		t.Errorf("String must be [%s], [%s] was", expectedString, actualString)
 	}
-
 }
