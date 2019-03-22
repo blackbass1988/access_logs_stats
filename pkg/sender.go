@@ -107,12 +107,9 @@ func NewSender(filter *Filter, config *Config) (*Sender, error) {
 
 func (s *Sender) appendToOutput(field string, metric string) {
 	var (
-		key             string
 		periodInSeconds float64
 		value           string
 	)
-
-	key = fmt.Sprintf("%s_%v", field, metric)
 
 	switch {
 	case metric == "min":

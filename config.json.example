@@ -23,14 +23,17 @@
   "output": [
     {
       "type": "console",
-      "settings": {}
+      "settings": {
+        "template": "${prefix}${field}.${metric}"
+      }
     },
     {
       "type": "zabbix",
       "settings": {
         "zabbix_host": "127.0.0.1",
         "zabbix_port": "1234",
-        "host": "${host}"
+        "host": "${host}",
+        "template": "${metric}[${hostname},${field}]"
       }
     }
   ]

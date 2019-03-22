@@ -48,10 +48,10 @@ func TestWithPayload(t *testing.T) {
 	metric := "cps_200"
 	field := "count"
 	payload := make(map[string]string)
-	payload["host"] = "localhost"
+	payload["hostname"] = "localhost"
 
 
-	err, template := output.NewTempate ("${metric}[${host},${field}]")
+	err, template := output.NewTempate ("${metric}[${hostname},${field}]")
 	if err != nil {
 		t.Errorf("Error must be nil, [%s] was", err)
 	}

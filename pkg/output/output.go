@@ -1,5 +1,8 @@
 package output
 
+// default template if template for output not set
+const DefaultTemplate = "${field}.${metric}"
+
 type output struct {
 	name    string
 	send    func([]*Message)
@@ -11,7 +14,8 @@ var outputs = []output{}
 
 //Message is key=value presentation of calculation
 type Message struct {
-	Key   string
+	Field   string
+	Metric string
 	Value string
 }
 
@@ -33,15 +37,15 @@ func (s *Output) SetPrefix(prefix string) {
 }
 
 //AddMessage adds message to message pack
-func (s *Output) AddMessage(field string, metric string, value string) {
-
-	key := field + "_" + metric
+func (s *Output) AddMessage(field string, metric string,  value string) {
 
 	if len(s.prefix) > 0 {
-		key = s.prefix + key
+		field = s.prefix + field
 	}
+
 	m := new(Message)
-	m.Key = key
+	m.Field = field
+	m.Metric = metric
 	m.Value = value
 	s.messages = append(s.messages, m)
 }
