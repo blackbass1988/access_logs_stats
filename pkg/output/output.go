@@ -33,7 +33,9 @@ func (s *Output) SetPrefix(prefix string) {
 }
 
 //AddMessage adds message to message pack
-func (s *Output) AddMessage(key string, value string) {
+func (s *Output) AddMessage(field string, metric string, value string) {
+
+	key := field + "_" + metric
 
 	if len(s.prefix) > 0 {
 		key = s.prefix + key

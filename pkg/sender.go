@@ -109,22 +109,22 @@ func (s *Sender) appendToOutput(field string, metric string) {
 	var (
 		key             string
 		periodInSeconds float64
-		message         string
+		value           string
 	)
 
 	key = fmt.Sprintf("%s_%v", field, metric)
 
 	switch {
 	case metric == "min":
-		message = fmt.Sprintf("%.3f", s.getFloatData(field).Min())
+		value = fmt.Sprintf("%.3f", s.getFloatData(field).Min())
 	case metric == "max":
-		message = fmt.Sprintf("%.3f", s.getFloatData(field).Max())
+		value = fmt.Sprintf("%.3f", s.getFloatData(field).Max())
 	case metric == "len":
-		message = fmt.Sprintf("%d", s.getFloatData(field).Len())
+		value = fmt.Sprintf("%d", s.getFloatData(field).Len())
 	case metric == "avg":
-		message = fmt.Sprintf("%.3f", s.getFloatData(field).Avg())
+		value = fmt.Sprintf("%.3f", s.getFloatData(field).Avg())
 	case metric == "sum":
-		message = fmt.Sprintf("%.3f", s.getFloatData(field).Sum())
+		value = fmt.Sprintf("%.3f", s.getFloatData(field).Sum())
 	case metric == "sum_ps":
 		result := s.getFloatData(field).Sum()
 		periodInSeconds = s.getPeriodInSeconds()
@@ -134,24 +134,24 @@ func (s *Sender) appendToOutput(field string, metric string) {
 			result = s.getFloatData(field).Sum() / s.getPeriodInSeconds()
 		}
 
-		message = fmt.Sprintf("%.3f", result)
+		value = fmt.Sprintf("%.3f", result)
 	case metric == "ips":
-		message = fmt.Sprintf("%.3f", s.getFloatData(field).ItemsPerSeconds(s.getPeriodInSeconds()))
+		value = fmt.Sprintf("%.3f", s.getFloatData(field).ItemsPerSeconds(s.getPeriodInSeconds()))
 	case strings.Contains(metric, "cent_"):
 		cent := strings.Split(metric, "_")
 		centFloat, err := strconv.ParseFloat(cent[1], 10)
 		checkOrFail(err)
-		message = fmt.Sprintf("%.3f", s.getFloatData(field).Percentile(centFloat))
+		value = fmt.Sprintf("%.3f", s.getFloatData(field).Percentile(centFloat))
 	case metric == "uniq":
-		message = fmt.Sprintf("%d", s.getUniqCnt(field))
+		value = fmt.Sprintf("%d", s.getUniqCnt(field))
 	case metric == "uniq_ps":
-		message = fmt.Sprintf("%.3f", float64(s.getUniqCnt(field))/s.getPeriodInSeconds())
+		value = fmt.Sprintf("%.3f", float64(s.getUniqCnt(field))/s.getPeriodInSeconds())
 	case strings.Contains(metric, "cps_"):
-		message = s.processCps(metric, field)
+		value = s.processCps(metric, field)
 	case strings.Contains(metric, "percentage_"):
-		message = s.processPercentage(metric, field)
+		value = s.processPercentage(metric, field)
 	}
-	s.output.AddMessage(key, message)
+	s.output.AddMessage(field, metric, value)
 }
 
 func (s *Sender) processCps(metric string, field string) string {
