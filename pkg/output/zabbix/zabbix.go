@@ -34,14 +34,19 @@ type zabbix struct {
 	zabbixPort string
 	host       string
 
-	conn net.Conn
+	conn     net.Conn
+	template *output.Template
+
+	payload map[string]string
 }
 
 func (z *zabbix) getData(messages []*output.Message) []data {
-	els := []data{}
+	var els []data
 
 	for _, message := range messages {
-		el := data{Host: z.host, Key: message.Key, Value: message.Value}
+		//todo implement via template
+		key := message.Field + "_" + message.Metric
+		el := data{Host: z.host, Key: key, Value: message.Value}
 		els = append(els, el)
 	}
 	return els
@@ -105,7 +110,10 @@ func Send(messages []*output.Message) {
 }
 
 //Init initializes zabbix sender
-func Init(params map[string]string) {
+func Init(params map[string]string, payload map[string]string) {
+	var err error
+
+	z.payload = payload
 
 	for k, v := range params {
 		if v == "${hostname}" {
@@ -119,6 +127,11 @@ func Init(params map[string]string) {
 			z.zabbixPort = v
 		case "host":
 			z.host = v
+		case "template":
+			err, z.template = output.NewTempate(v)
+			if err != nil {
+				log.Fatalln("invalid template", v, "error was:", err)
+			}
 		}
 	}
 	if z.zabbixHost == "" || z.zabbixPort == "" || z.host == "" {

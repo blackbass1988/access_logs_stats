@@ -6,14 +6,12 @@ import (
 	"strings"
 )
 
-var requiredFields = [2]string {"field","metric",}
+var requiredFields = [2]string{"field", "metric"}
 var varTemplate = "${%s}"
-
 
 type Template struct {
 	template string
 }
-
 
 // Create string from template with input parameters
 func (template *Template) Process(field string, metric string, payload map[string]string) (error, string) {
@@ -31,7 +29,7 @@ func (template *Template) Process(field string, metric string, payload map[strin
 		replaceString := fmt.Sprintf(varTemplate, f)
 
 		if !strings.Contains(finalString, replaceString) {
-			return errors.New("field "+ f +" not found in template"), ""
+			return errors.New("field " + f + " not found in template"), ""
 		}
 
 		finalString = strings.ReplaceAll(finalString, replaceString, payload[f])
@@ -44,7 +42,6 @@ func NewTempate(template string) (error, *Template) {
 	var err error
 
 	t := new(Template)
-
 
 	if err = validateTemplate(template); err != nil {
 		return err, nil

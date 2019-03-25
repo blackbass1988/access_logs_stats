@@ -99,7 +99,8 @@ func NewSender(filter *Filter, config *Config) (*Sender, error) {
 	}
 
 	for _, s := range config.Outputs {
-		sender.output.Init(s.Type, s.Settings)
+		//todo implement payload pass
+		sender.output.Init(s.Type, s.Settings, nil)
 	}
 
 	return sender, nil

@@ -6,7 +6,7 @@ const DefaultTemplate = "${field}.${metric}"
 type output struct {
 	name    string
 	send    func([]*Message)
-	init    func(map[string]string)
+	init    func(map[string]string, map[string]string)
 	enabled bool
 }
 
@@ -14,13 +14,13 @@ var outputs = []output{}
 
 //Message is key=value presentation of calculation
 type Message struct {
-	Field   string
+	Field  string
 	Metric string
-	Value string
+	Value  string
 }
 
 //RegisterOutput registers new output
-func RegisterOutput(name string, send func(messages []*Message), init func(params map[string]string)) error {
+func RegisterOutput(name string, send func(messages []*Message), init func(params map[string]string, payload map[string]string)) error {
 	outputs = append(outputs, output{name, send, init, false})
 	return nil
 }
@@ -37,7 +37,7 @@ func (s *Output) SetPrefix(prefix string) {
 }
 
 //AddMessage adds message to message pack
-func (s *Output) AddMessage(field string, metric string,  value string) {
+func (s *Output) AddMessage(field string, metric string, value string) {
 
 	if len(s.prefix) > 0 {
 		field = s.prefix + field
@@ -63,11 +63,11 @@ func (s *Output) Send() {
 }
 
 //Init initializes parent outputs
-func (s *Output) Init(senderName string, params map[string]string) {
+func (s *Output) Init(senderName string, params map[string]string, payload map[string]string) {
 	for i, aOutput := range outputs {
 		if aOutput.name == senderName {
 			outputs[i].enabled = true
-			aOutput.init(params)
+			aOutput.init(params, payload)
 			break
 		}
 	}

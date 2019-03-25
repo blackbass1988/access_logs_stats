@@ -6,14 +6,14 @@ import (
 )
 
 func TestTemplateWithoutVars(t *testing.T) {
-	err, _ := output.NewTempate ("abcdef")
+	err, _ := output.NewTempate("abcdef")
 	if err == nil {
 		t.Errorf("Must be error, but was nil")
 	}
 }
 
 func TestTemplateWithoutRequiredVars(t *testing.T) {
-	err, _ := output.NewTempate ("${field}.hello.world")
+	err, _ := output.NewTempate("${field}.hello.world")
 	if err == nil {
 		t.Errorf("Must be error, but was nil")
 	}
@@ -23,7 +23,6 @@ func TestTemplateWithoutRequiredVars(t *testing.T) {
 	}
 
 }
-
 
 func TestGoodTemplate(t *testing.T) {
 	field := "count"
@@ -50,8 +49,7 @@ func TestWithPayload(t *testing.T) {
 	payload := make(map[string]string)
 	payload["hostname"] = "localhost"
 
-
-	err, template := output.NewTempate ("${metric}[${hostname},${field}]")
+	err, template := output.NewTempate("${metric}[${hostname},${field}]")
 	if err != nil {
 		t.Errorf("Error must be nil, [%s] was", err)
 	}

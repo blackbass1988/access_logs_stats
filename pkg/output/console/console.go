@@ -7,16 +7,17 @@ import (
 
 var c *console
 
-
 type console struct {
 	template *output.Template
+	payload  map[string]string
 }
 
-func (c *console) send(field string, metric string, payload map[string]string, value string) {
-	err, key  := c.template.Process(field, metric, payload)
+func (c *console) send(field string, metric string, value string) {
+
+	err, key := c.template.Process(field, metric, c.payload)
 
 	if err != nil {
-		log.Println("ERROR:" , err)
+		log.Println("ERROR:", err)
 	} else {
 		log.Printf("%s = %s\n", key, value)
 	}
@@ -27,17 +28,18 @@ func (c *console) send(field string, metric string, payload map[string]string, v
 func Send(messages []*output.Message) {
 
 	for _, message := range messages {
-		c.send(message.Field, message.Metric, message.Payload, message.Value)
+		c.send(message.Field, message.Metric, message.Value)
 	}
 
 }
 
 //Init initializes console sender
-func Init(params map[string]string) {
+func Init(params map[string]string, payload map[string]string) {
 	var err error
 	var templateString string
 	var ok bool
 
+	c.payload = payload
 	if templateString, ok = params["template"]; !ok {
 		templateString = output.DefaultTemplate
 	}
