@@ -17,8 +17,9 @@ type Config struct {
 
 	ExitAfterOneTick bool
 
-	Counts     map[string]bool
-	Aggregates map[string]bool
+	Counts       map[string]bool
+	Aggregates   map[string]bool
+	TemplateVars map[string]string
 
 	Outputs []*outputConfig
 	Rex     re.RegExp
@@ -40,6 +41,8 @@ type configStruct struct {
 
 	Filters []*Filter       `json:"filters" yaml:"filters"`
 	Outputs []*outputConfig `json:"output" yaml:"output"`
+
+	TemplateVars map[string]string `json:"template_vars" yaml:"template_vars"`
 }
 
 //NewConfig parse config filepath and return new Config
@@ -80,6 +83,12 @@ func NewConfig(filepath string) (config Config, err error) {
 	config.Rex, err = re.Compile(configStruct.Regexp)
 	if err != nil {
 		return config, err
+	}
+
+	config.TemplateVars = make(map[string]string)
+
+	if configStruct.TemplateVars != nil {
+		config.TemplateVars = configStruct.TemplateVars
 	}
 
 	config.Outputs = configStruct.Outputs

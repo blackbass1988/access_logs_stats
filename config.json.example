@@ -4,6 +4,9 @@
   "period": "10s",
   "counts": ["code", "time"],
   "aggregates": ["time"],
+  "template_vars": {
+    "hostname": "localhost"
+  },
   "filters": [
     {
       "filter": ".+",
@@ -24,7 +27,7 @@
     {
       "type": "console",
       "settings": {
-        "template": "${prefix}${field}.${metric}"
+        "template": "${prefix}${field}.${metric}::${hostname}"
       }
     },
     {

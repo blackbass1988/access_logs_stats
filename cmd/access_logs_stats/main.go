@@ -4,6 +4,7 @@ import (
 	"flag"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/blackbass1988/access_logs_stats/pkg"
@@ -41,6 +42,8 @@ func main() {
 		heapProfile      string
 		cpuProfile       string
 		exitAfterOneTick bool
+		templateVars     templateVarsArray
+		templateVarsMap  map[string]string
 	)
 
 	printHello()
@@ -49,7 +52,12 @@ func main() {
 	flag.StringVar(&heapProfile, "heapprofile", "", "enable heap profiling")
 	flag.StringVar(&cpuProfile, "cpuprofile", "", "Write the cpu heapProfile to `filename`")
 	flag.BoolVar(&exitAfterOneTick, "one", false, "make one tick end exit")
+	flag.Var(&templateVars, "template-var", "Extra variables to set into output template")
 	flag.Parse()
+
+	if len(templateVars) > 0 {
+		templateVarsMap = arrayToMap(templateVars)
+	}
 
 	if cpuProfile != "" {
 		cWriter, err := os.Create(cpuProfile)
@@ -79,10 +87,36 @@ func main() {
 	}
 	config.ExitAfterOneTick = exitAfterOneTick
 
+	for k, v := range templateVarsMap {
+		config.TemplateVars[k] = v
+	}
+
 	app, err := pkg.NewApp(config)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	app.Start()
+}
+
+type templateVarsArray []string
+
+func (t *templateVarsArray) String() string {
+	return "[" + strings.Join(*t, ",") + "]"
+}
+
+func (t *templateVarsArray) Set(value string) error {
+	*t = append(*t, value)
+	return nil
+}
+
+func arrayToMap(arr []string) map[string]string {
+	m := make(map[string]string)
+
+	for _, i := range arr {
+		splited := strings.Split(i, "=")
+		m[splited[0]] = splited[1]
+	}
+
+	return m
 }

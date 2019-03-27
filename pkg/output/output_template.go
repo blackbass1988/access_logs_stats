@@ -14,25 +14,25 @@ type Template struct {
 }
 
 // Create string from template with input parameters
-func (template *Template) Process(field string, metric string, payload map[string]string) (error, string) {
+func (template *Template) Process(field string, metric string, templateVars map[string]string) (error, string) {
 
 	finalString := template.template
 
-	if payload == nil {
-		payload = make(map[string]string)
+	if templateVars == nil {
+		templateVars = make(map[string]string)
 	}
 
-	payload["field"] = field
-	payload["metric"] = metric
+	templateVars["field"] = field
+	templateVars["metric"] = metric
 
-	for f := range payload {
+	for f := range templateVars {
 		replaceString := fmt.Sprintf(varTemplate, f)
 
 		if !strings.Contains(finalString, replaceString) {
-			return errors.New("field " + f + " not found in template"), ""
+			return errors.New("field \"" + f + "\" not found in template " + template.template), ""
 		}
 
-		finalString = strings.ReplaceAll(finalString, replaceString, payload[f])
+		finalString = strings.ReplaceAll(finalString, replaceString, templateVars[f])
 	}
 
 	return nil, finalString

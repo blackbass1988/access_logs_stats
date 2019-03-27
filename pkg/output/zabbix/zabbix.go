@@ -37,15 +37,22 @@ type zabbix struct {
 	conn     net.Conn
 	template *output.Template
 
-	payload map[string]string
+	templateVars map[string]string
 }
 
 func (z *zabbix) getData(messages []*output.Message) []data {
 	var els []data
 
 	for _, message := range messages {
-		//todo implement via template
 		key := message.Field + "_" + message.Metric
+
+		err, key := z.template.Process(message.Field, message.Metric, z.templateVars)
+
+		if err != nil {
+			//ok for dev version
+			log.Panic(err)
+		}
+
 		el := data{Host: z.host, Key: key, Value: message.Value}
 		els = append(els, el)
 	}
@@ -110,10 +117,11 @@ func Send(messages []*output.Message) {
 }
 
 //Init initializes zabbix sender
-func Init(params map[string]string, payload map[string]string) {
+func Init(params map[string]string, templateVars map[string]string) {
 	var err error
 
-	z.payload = payload
+	z.templateVars = templateVars
+	templateString := output.DefaultTemplate
 
 	for k, v := range params {
 		if v == "${hostname}" {
@@ -128,12 +136,15 @@ func Init(params map[string]string, payload map[string]string) {
 		case "host":
 			z.host = v
 		case "template":
-			err, z.template = output.NewTempate(v)
-			if err != nil {
-				log.Fatalln("invalid template", v, "error was:", err)
-			}
+			templateString = v
 		}
 	}
+
+	err, z.template = output.NewTempate(templateString)
+	if err != nil {
+		log.Fatalln("invalid template", templateString, "error was:", err)
+	}
+
 	if z.zabbixHost == "" || z.zabbixPort == "" || z.host == "" {
 		log.Fatal("zabbix settings is incorrect. You must specify ",
 			"zabbix_host, zabbix_port and host")

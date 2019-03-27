@@ -1,14 +1,14 @@
 hash: da9b55a01fb1d577d52c1bd533b9e08a10dd31e4c99bc9eb4c52fcf6f057afd7
-updated: 2019-03-22T14:25:06.121207+10:00
+updated: 2019-03-27T09:50:20.155027+10:00
 imports:
 - name: github.com/blackbass1988/yet_another_pprof_wrapper
-  version: ef2869d5389c6122f510f76a86d29ae165720abc
+  version: d0534355fec0b3f39bee7692200dc99484f0e765
 - name: github.com/glenn-brown/golang-pkg-pcre
   version: 48bb82a8b8ceea98f4e97825b43870f6ba1970d6
   subpackages:
   - src/pkg/pcre
 - name: gopkg.in/check.v1
-  version: 20d25e2804050c1cd24a7eea1e7a6447dd0e74ec
+  version: 788fd78401277ebd861206a03c884797c6ec5541
 - name: gopkg.in/yaml.v2
-  version: cd8b52f8269e0feb286dfeef29f8fe4d5b397e0b
+  version: 51d6538a90f86fe93ac480b35f37b2be17fef232
 testImports: []

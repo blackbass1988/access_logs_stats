@@ -20,7 +20,7 @@ type Message struct {
 }
 
 //RegisterOutput registers new output
-func RegisterOutput(name string, send func(messages []*Message), init func(params map[string]string, payload map[string]string)) error {
+func RegisterOutput(name string, send func(messages []*Message), init func(params map[string]string, templateVars map[string]string)) error {
 	outputs = append(outputs, output{name, send, init, false})
 	return nil
 }
@@ -63,11 +63,11 @@ func (s *Output) Send() {
 }
 
 //Init initializes parent outputs
-func (s *Output) Init(senderName string, params map[string]string, payload map[string]string) {
+func (s *Output) Init(senderName string, params map[string]string, templateVars map[string]string) {
 	for i, aOutput := range outputs {
 		if aOutput.name == senderName {
 			outputs[i].enabled = true
-			aOutput.init(params, payload)
+			aOutput.init(params, templateVars)
 			break
 		}
 	}

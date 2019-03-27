@@ -8,13 +8,13 @@ import (
 var c *console
 
 type console struct {
-	template *output.Template
-	payload  map[string]string
+	template     *output.Template
+	templateVars map[string]string
 }
 
 func (c *console) send(field string, metric string, value string) {
 
-	err, key := c.template.Process(field, metric, c.payload)
+	err, key := c.template.Process(field, metric, c.templateVars)
 
 	if err != nil {
 		log.Println("ERROR:", err)
@@ -34,12 +34,12 @@ func Send(messages []*output.Message) {
 }
 
 //Init initializes console sender
-func Init(params map[string]string, payload map[string]string) {
+func Init(params map[string]string, templateVars map[string]string) {
 	var err error
 	var templateString string
 	var ok bool
 
-	c.payload = payload
+	c.templateVars = templateVars
 	if templateString, ok = params["template"]; !ok {
 		templateString = output.DefaultTemplate
 	}

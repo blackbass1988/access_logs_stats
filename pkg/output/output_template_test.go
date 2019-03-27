@@ -42,19 +42,19 @@ func TestGoodTemplate(t *testing.T) {
 	}
 }
 
-func TestWithPayload(t *testing.T) {
+func TestWithTemplateVars(t *testing.T) {
 	expectedString := "cps_200[localhost,count]"
 	metric := "cps_200"
 	field := "count"
-	payload := make(map[string]string)
-	payload["hostname"] = "localhost"
+	templateVars := make(map[string]string)
+	templateVars["hostname"] = "localhost"
 
 	err, template := output.NewTempate("${metric}[${hostname},${field}]")
 	if err != nil {
 		t.Errorf("Error must be nil, [%s] was", err)
 	}
 
-	err, actualString := template.Process(field, metric, payload)
+	err, actualString := template.Process(field, metric, templateVars)
 
 	if expectedString != actualString {
 		t.Errorf("String must be [%s], [%s] was", expectedString, actualString)

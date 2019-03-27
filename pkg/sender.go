@@ -99,8 +99,7 @@ func NewSender(filter *Filter, config *Config) (*Sender, error) {
 	}
 
 	for _, s := range config.Outputs {
-		//todo implement payload pass
-		sender.output.Init(s.Type, s.Settings, nil)
+		sender.output.Init(s.Type, s.Settings, config.TemplateVars)
 	}
 
 	return sender, nil
@@ -158,7 +157,7 @@ func (s *Sender) processCps(metric string, field string) string {
 		cnt uint64
 	)
 
-	metrics := strings.Split(metric, "_")
+	metrics := strings.SplitN(metric, "_", 2)
 	metric = metrics[1]
 	if _, ok = s.counts[field]; !ok {
 		cnt = 0
