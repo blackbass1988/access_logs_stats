@@ -16,16 +16,23 @@ type Template struct {
 // Create string from template with input parameters
 func (template *Template) Process(field string, metric string, templateVars map[string]string) (error, string) {
 
+	tempVars := make(map[string]string)
+
 	finalString := template.template
 
-	if templateVars == nil {
-		templateVars = make(map[string]string)
+	if templateVars != nil {
+
+		for k, v := range templateVars {
+			tempVars[k] = v
+		}
 	}
 
-	templateVars["field"] = field
-	templateVars["metric"] = metric
 
-	for k, v:= range templateVars {
+
+	tempVars["field"] = field
+	tempVars["metric"] = metric
+
+	for k, v:= range tempVars {
 		replaceString := fmt.Sprintf(varTemplate, k)
 
 		if !strings.Contains(finalString, replaceString) {
