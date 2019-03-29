@@ -80,8 +80,8 @@ func (s *Sender) sendStats() (err error) {
 			s.appendToOutput(metricsOfField.Field, metric)
 		}
 	}
-	s.globalLock.Unlock()
 	s.output.Send()
+	s.globalLock.Unlock()
 
 	return err
 }

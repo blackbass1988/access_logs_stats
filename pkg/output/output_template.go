@@ -25,14 +25,14 @@ func (template *Template) Process(field string, metric string, templateVars map[
 	templateVars["field"] = field
 	templateVars["metric"] = metric
 
-	for f := range templateVars {
-		replaceString := fmt.Sprintf(varTemplate, f)
+	for k, v:= range templateVars {
+		replaceString := fmt.Sprintf(varTemplate, k)
 
 		if !strings.Contains(finalString, replaceString) {
-			return errors.New("field \"" + f + "\" not found in template " + template.template), ""
+			return errors.New("field \"" + k + "\" not found in template " + template.template), ""
 		}
 
-		finalString = strings.ReplaceAll(finalString, replaceString, templateVars[f])
+		finalString = strings.ReplaceAll(finalString, replaceString, v)
 	}
 
 	return nil, finalString
