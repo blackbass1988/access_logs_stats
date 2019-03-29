@@ -34,7 +34,6 @@ type zabbix struct {
 	zabbixPort string
 	host       string
 
-	conn     net.Conn
 	template *output.Template
 
 	templateVars map[string]string
@@ -74,19 +73,19 @@ func (z *zabbix) send(messages []*output.Message) {
 	}
 
 	//send to server
-	z.conn, err = net.Dial("tcp4", z.zabbixHost+":"+z.zabbixPort)
+	conn, err := net.Dial("tcp4", z.zabbixHost+":"+z.zabbixPort)
 	if err != nil {
 		log.Println("zabbix connect error:", err)
 		return
 	}
-	defer z.conn.Close()
+	defer conn.Close()
 
 	length := len(jsonBytes)
 
 	buf := bytes.NewBuffer(header)
 	binary.Write(buf, binary.LittleEndian, uint64(length))
 	buf.Write(jsonBytes)
-	_, err = z.conn.Write(buf.Bytes())
+	_, err = conn.Write(buf.Bytes())
 	if err != nil {
 		log.Println("zabbix socket write error:", err)
 	}
@@ -95,7 +94,7 @@ func (z *zabbix) send(messages []*output.Message) {
 	response := []byte{}
 	tmp := make([]byte, 64)
 	for {
-		_, err := z.conn.Read(tmp)
+		_, err := conn.Read(tmp)
 		if err != nil {
 			if err != io.EOF {
 				log.Print("zabbix socket read error:", err)
