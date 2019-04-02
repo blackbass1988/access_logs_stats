@@ -47,7 +47,7 @@ func NewApp(config Config) (app *App, err error) {
 		return nil, err
 	}
 
-	err, config.InputDsn = tmpl.ProcessTemplate(config.TemplateVars, false)
+	err, config.InputDsn = tmpl.ProcessTemplate(config.TemplateVars)
 
 	if err != nil {
 		return nil, err

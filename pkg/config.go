@@ -93,7 +93,7 @@ func NewConfig(filepath string, externalTemplateVarsMap map[string]string) (conf
 		return config, err
 	}
 
-	err, config.InputDsn = tmpl.ProcessTemplate(config.TemplateVars, false)
+	err, config.InputDsn = tmpl.ProcessTemplate(config.TemplateVars)
 
 	if err != nil {
 		return config, err
