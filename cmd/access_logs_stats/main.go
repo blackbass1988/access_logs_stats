@@ -52,7 +52,11 @@ func main() {
 	flag.StringVar(&heapProfile, "heapprofile", "", "enable heap profiling")
 	flag.StringVar(&cpuProfile, "cpuprofile", "", "Write the cpu heapProfile to `filename`")
 	flag.BoolVar(&exitAfterOneTick, "one", false, "make one tick end exit")
-	flag.Var(&templateVars, "template-var", "Extra variables to set into output template")
+	flag.Var(&templateVars,
+		"template-var",
+		`Extra variables to set into output template.
+You can pass many variables.
+For example: -template-var key=value -template-var foo=bar`)
 	flag.Parse()
 
 	if len(templateVars) > 0 {
