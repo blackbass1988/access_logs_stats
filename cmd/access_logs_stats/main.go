@@ -34,7 +34,7 @@ func init() {
 }
 
 func printHello() {
-	fmt.Printf("AccessLogsStats ver.%s@%s (git %s %s)", version, buildTime, branch, commit)
+	fmt.Printf("AccessLogsStats ver.%s@%s (git %s %s)\n", version, buildTime, branch, commit)
 }
 
 func main() {

@@ -7,7 +7,12 @@ import (
 
 func TestYamlConfig(t *testing.T) {
 	filepath := "../config.yaml.example"
-	config, err := pkg.NewConfig(filepath, nil)
+
+	templateVars := make(map[string]string)
+
+	templateVars["fn"] = "foo.txt"
+
+	config, err := pkg.NewConfig(filepath, templateVars)
 
 	if err != nil {
 		t.Fatal(err)
