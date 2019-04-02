@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -33,7 +34,7 @@ func init() {
 }
 
 func printHello() {
-	log.Printf("AccessLogsStats ver.%s@%s (git %s %s)", version, buildTime, branch, commit)
+	fmt.Printf("AccessLogsStats ver.%s@%s (git %s %s)", version, buildTime, branch, commit)
 }
 
 func main() {
@@ -42,12 +43,14 @@ func main() {
 		heapProfile      string
 		cpuProfile       string
 		exitAfterOneTick bool
+		showVersion      bool
 		templateVars     templateVarsArray
 		templateVarsMap  map[string]string
 	)
 
 	printHello()
 
+	flag.BoolVar(&showVersion, "version", false, "show current version")
 	flag.StringVar(&fileconfig, "c", "", "config path")
 	flag.StringVar(&heapProfile, "heapprofile", "", "enable heap profiling")
 	flag.StringVar(&cpuProfile, "cpuprofile", "", "Write the cpu heapProfile to `filename`")
@@ -58,6 +61,10 @@ func main() {
 You can pass many variables.
 For example: -template-var key=value -template-var foo=bar`)
 	flag.Parse()
+
+	if showVersion {
+		os.Exit(0)
+	}
 
 	if len(templateVars) > 0 {
 		templateVarsMap = arrayToMap(templateVars)
