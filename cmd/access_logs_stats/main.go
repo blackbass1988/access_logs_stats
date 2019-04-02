@@ -85,15 +85,11 @@ For example: -template-var key=value -template-var foo=bar`)
 		os.Exit(2)
 	}
 
-	config, err := pkg.NewConfig(fileconfig)
+	config, err := pkg.NewConfig(fileconfig, templateVarsMap)
 	if err != nil {
 		log.Fatal(err)
 	}
 	config.ExitAfterOneTick = exitAfterOneTick
-
-	for k, v := range templateVarsMap {
-		config.TemplateVars[k] = v
-	}
 
 	app, err := pkg.NewApp(config)
 	if err != nil {

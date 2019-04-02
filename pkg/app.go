@@ -3,6 +3,7 @@ package pkg
 import (
 	"bufio"
 	"errors"
+	"github.com/blackbass1988/access_logs_stats/pkg/template"
 	"log"
 	"os"
 	"time"
@@ -39,6 +40,19 @@ type App struct {
 //NewApp creates new parser
 func NewApp(config Config) (app *App, err error) {
 	app = new(App)
+
+	err, tmpl := template.NewTempate(config.InputDsn)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err, config.InputDsn = tmpl.ProcessTemplate(config.TemplateVars, false)
+
+	if err != nil {
+		return nil, err
+	}
+
 	app.config = config
 	return app, err
 }

@@ -47,7 +47,7 @@ type configStruct struct {
 }
 
 //NewConfig parse config filepath and return new Config
-func NewConfig(filepath string) (config Config, err error) {
+func NewConfig(filepath string, externalTemplateVarsMap map[string]string) (config Config, err error) {
 	configStruct := new(configStruct)
 	config.Aggregates = make(map[string]bool)
 	config.Counts = make(map[string]bool)
@@ -79,6 +79,12 @@ func NewConfig(filepath string) (config Config, err error) {
 
 	if configStruct.TemplateVars != nil {
 		config.TemplateVars = configStruct.TemplateVars
+	}
+
+	if externalTemplateVarsMap != nil {
+		for k, v := range externalTemplateVarsMap {
+			config.TemplateVars[k] = v
+		}
 	}
 
 	err, tmpl := template.NewTempate(configStruct.InputDsn)

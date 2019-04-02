@@ -7,7 +7,7 @@ import (
 
 func TestYamlConfig(t *testing.T) {
 	filepath := "../config.yaml.example"
-	config, err := pkg.NewConfig(filepath)
+	config, err := pkg.NewConfig(filepath, nil)
 
 	if err != nil {
 		t.Fatal(err)
@@ -19,7 +19,7 @@ func TestYamlConfig(t *testing.T) {
 func TestJsonConfig(t *testing.T) {
 	filepath := "../config.json.example"
 
-	config, err := pkg.NewConfig(filepath)
+	config, err := pkg.NewConfig(filepath, nil)
 
 	if err != nil {
 		t.Fatal(err)
