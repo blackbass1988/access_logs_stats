@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/blackbass1988/access_logs_stats/pkg/re"
+	"github.com/blackbass1988/access_logs_stats/pkg/template"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
@@ -74,7 +75,24 @@ func NewConfig(filepath string) (config Config, err error) {
 		return config, err
 	}
 
-	config.InputDsn = configStruct.InputDsn
+	config.TemplateVars = make(map[string]string)
+
+	if configStruct.TemplateVars != nil {
+		config.TemplateVars = configStruct.TemplateVars
+	}
+
+	err, tmpl := template.NewTempate(configStruct.InputDsn)
+
+	if err != nil {
+		return config, err
+	}
+
+	err, config.InputDsn = tmpl.ProcessTemplate(config.TemplateVars, false)
+
+	if err != nil {
+		return config, err
+	}
+
 	config.Period, err = time.ParseDuration(configStruct.Period)
 	if err != nil {
 		return config, err
@@ -83,12 +101,6 @@ func NewConfig(filepath string) (config Config, err error) {
 	config.Rex, err = re.Compile(configStruct.Regexp)
 	if err != nil {
 		return config, err
-	}
-
-	config.TemplateVars = make(map[string]string)
-
-	if configStruct.TemplateVars != nil {
-		config.TemplateVars = configStruct.TemplateVars
 	}
 
 	config.Outputs = configStruct.Outputs

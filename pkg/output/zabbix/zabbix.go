@@ -10,6 +10,7 @@ import (
 	"os"
 
 	"github.com/blackbass1988/access_logs_stats/pkg/output"
+	"github.com/blackbass1988/access_logs_stats/pkg/template"
 )
 
 var (
@@ -34,7 +35,7 @@ type zabbix struct {
 	zabbixPort string
 	host       string
 
-	template *output.Template
+	template *template.Template
 
 	templateVars map[string]string
 }
@@ -139,7 +140,7 @@ func Init(params map[string]string, templateVars map[string]string) {
 		}
 	}
 
-	err, z.template = output.NewTempate(templateString)
+	err, z.template = template.NewTempate(templateString)
 	if err != nil {
 		log.Fatalln("invalid template", templateString, "error was:", err)
 	}

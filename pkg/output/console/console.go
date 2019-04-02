@@ -1,14 +1,16 @@
 package console
 
 import (
-	"github.com/blackbass1988/access_logs_stats/pkg/output"
 	"log"
+
+	"github.com/blackbass1988/access_logs_stats/pkg/output"
+	"github.com/blackbass1988/access_logs_stats/pkg/template"
 )
 
 var c *console
 
 type console struct {
-	template     *output.Template
+	template     *template.Template
 	templateVars map[string]string
 }
 
@@ -44,7 +46,7 @@ func Init(params map[string]string, templateVars map[string]string) {
 		templateString = output.DefaultTemplate
 	}
 
-	err, c.template = output.NewTempate(templateString)
+	err, c.template = template.NewTempate(templateString)
 
 	if err != nil {
 		log.Fatalf("template init failed for template \"%s\". Error: \"%s\"", templateString, err.Error())

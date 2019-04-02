@@ -97,6 +97,7 @@ func (a *App) Start() {
 }
 
 func (a *App) openReader() (err error) {
+
 	a.ir, err = input.GetFileReader(a.config.InputDsn)
 	return err
 }
