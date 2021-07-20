@@ -44,7 +44,10 @@
         {
           "field": "time",
           "metrics": [
-            "prometheus_histogram"
+            "prometheus_histogram",
+            "prometheus_gauge",
+            "prometheus_counter",
+            "prometheus_summary"
           ]
         }
       ]

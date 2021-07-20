@@ -36,8 +36,11 @@ type Sender struct {
 	//вывод происходит по схеме - кол-во в 1 секунду
 	counts map[string]map[string]uint64
 
-	prometheusHistograms       map[string]*prometheus.HistogramVec
-	prometheusLabelsTemplates  map[string]*template.Template
+	prometheusHistograms      map[string]*prometheus.HistogramVec
+	prometheusGauges          map[string]*prometheus.GaugeVec
+	prometheusCounters        map[string]*prometheus.CounterVec
+	prometheusSummary         map[string]*prometheus.SummaryVec
+	prometheusLabelsTemplates map[string]*template.Template
 
 	globalLock sync.Mutex
 }
@@ -90,14 +93,35 @@ func (s *Sender) appendIfOk(row *RowEntry) {
 			s.counts[field][val]++
 		}
 
+		// Добавляем в прометей метрики сейчас - потому что не хочется писать логику
+		// сохранения значений с учетом лейблов (тогда придется аккуратно хэшировать)
+		// проще переиспользовать логику из прометея с HistogramVec
 		if _, ok := s.prometheusHistograms[field]; ok {
 			valFloat, err := strconv.ParseFloat(val, 10)
 			checkOrFail(err)
 
-			// Добавляем в прометей метрики сейчас - потому что не хочется писать логику
-			// сохранения значений с учетом лейблов (тогда придется аккуратно хэшировать)
-			// проще переиспользовать логику из прометея с HistogramVec
 			s.prometheusHistograms[field].With(prometheusLabels).Observe(valFloat)
+		}
+
+		if _, ok := s.prometheusGauges[field]; ok {
+			valFloat, err := strconv.ParseFloat(val, 10)
+			checkOrFail(err)
+
+			s.prometheusGauges[field].With(prometheusLabels).Set(valFloat)
+		}
+
+		if _, ok := s.prometheusCounters[field]; ok {
+			valFloat, err := strconv.ParseFloat(val, 10)
+			checkOrFail(err)
+
+			s.prometheusCounters[field].With(prometheusLabels).Add(valFloat)
+		}
+
+		if _, ok := s.prometheusSummary[field]; ok {
+			valFloat, err := strconv.ParseFloat(val, 10)
+			checkOrFail(err)
+
+			s.prometheusSummary[field].With(prometheusLabels).Observe(valFloat)
 		}
 	}
 
@@ -137,6 +161,9 @@ func NewSender(filter *Filter, config *Config) (*Sender, error) {
 	}
 
 	sender.prometheusHistograms = map[string]*prometheus.HistogramVec{}
+	sender.prometheusGauges = map[string]*prometheus.GaugeVec{}
+	sender.prometheusCounters = map[string]*prometheus.CounterVec{}
+	sender.prometheusSummary = map[string]*prometheus.SummaryVec{}
 	sender.prometheusLabelsTemplates = map[string]*template.Template{}
 	for k, v := range filter.PrometheusLabels {
 		sender.prometheusLabelsTemplates[k] = template.NewTemplate(v)
@@ -151,10 +178,31 @@ func NewSender(filter *Filter, config *Config) (*Sender, error) {
 		for _, metric := range item.Metrics {
 			if metric == "prometheus_histogram" {
 				sender.prometheusHistograms[item.Field] = prometheus.NewHistogramVec(prometheus.HistogramOpts{
-					Name: filter.Prefix + item.Field,
-					Help: filter.Prefix + item.Field + " autogen help (by access_logs_stats)",
+					Name: "histogram_" + filter.Prefix + item.Field,
+					Help: "histogram_" + filter.Prefix + item.Field + " autogen help (by access_logs_stats)",
 				}, keys)
 				sender.output.RegisterPrometheus(sender.prometheusHistograms[item.Field])
+			}
+			if metric == "prometheus_gauge" {
+				sender.prometheusGauges[item.Field] = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+					Name: "gauge_" + filter.Prefix + item.Field,
+					Help: "gauge_" + filter.Prefix + item.Field + " autogen help (by access_logs_stats)",
+				}, keys)
+				sender.output.RegisterPrometheus(sender.prometheusGauges[item.Field])
+			}
+			if metric == "prometheus_counter" {
+				sender.prometheusCounters[item.Field] = prometheus.NewCounterVec(prometheus.CounterOpts{
+					Name: "counter_" + filter.Prefix + item.Field,
+					Help: "counter_" + filter.Prefix + item.Field + " autogen help (by access_logs_stats)",
+				}, keys)
+				sender.output.RegisterPrometheus(sender.prometheusCounters[item.Field])
+			}
+			if metric == "prometheus_summary" {
+				sender.prometheusSummary[item.Field] = prometheus.NewSummaryVec(prometheus.SummaryOpts{
+					Name: "summary_" + filter.Prefix + item.Field,
+					Help: "summary_" + filter.Prefix + item.Field + " summary autogen help (by access_logs_stats)",
+				}, keys)
+				sender.output.RegisterPrometheus(sender.prometheusSummary[item.Field])
 			}
 		}
 	}

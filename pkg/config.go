@@ -132,7 +132,7 @@ func processFilters(filters []*Filter, config *Config) []*Filter {
 					config.Aggregates[filterItem.Field] = true
 				case metric == "uniq", metric == "uniq_ps", strings.Contains(metric, "cps_"), strings.Contains(metric, "percentage_"):
 					config.Counts[filterItem.Field] = true
-				case metric == "prometheus_histogram":
+				case metric == "prometheus_histogram", metric == "prometheus_gauge", metric == "prometheus_counter", metric == "prometheus_summary":
 					// nope
 				default:
 					log.Fatalf("unknown mentric type %s \n", metric)
