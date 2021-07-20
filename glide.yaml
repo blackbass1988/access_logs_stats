@@ -1,8 +1,0 @@
-package: github.com/blackbass1988/access_logs_stats
-import:
-- package: gopkg.in/yaml.v2
-- package: gopkg.in/check.v1
-- package: github.com/glenn-brown/golang-pkg-pcre
-  subpackages:
-  - src/pkg/pcre
-- package: github.com/blackbass1988/yet_another_pprof_wrapper
