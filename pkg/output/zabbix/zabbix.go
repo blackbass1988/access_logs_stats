@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/json"
+	"github.com/prometheus/client_golang/prometheus"
 	"io"
 	"log"
 	"net"
@@ -46,12 +47,7 @@ func (z *zabbix) getData(messages []*output.Message) []data {
 	for _, message := range messages {
 		key := message.Field + "_" + message.Metric
 
-		err, key := z.template.Process(message.Field, message.Metric, z.templateVars)
-
-		if err != nil {
-			//ok for dev version
-			log.Panic(err)
-		}
+		key = z.template.Process(message.Field, message.Metric, z.templateVars)
 
 		el := data{Host: z.host, Key: key, Value: message.Value}
 		els = append(els, el)
@@ -118,8 +114,6 @@ func Send(messages []*output.Message) {
 
 //Init initializes zabbix sender
 func Init(params map[string]string, templateVars map[string]string) {
-	var err error
-
 	z.templateVars = templateVars
 	templateString := output.DefaultTemplate
 
@@ -140,10 +134,7 @@ func Init(params map[string]string, templateVars map[string]string) {
 		}
 	}
 
-	err, z.template = template.NewTempate(templateString)
-	if err != nil {
-		log.Fatalln("invalid template", templateString, "error was:", err)
-	}
+	z.template = template.NewTemplate(templateString)
 
 	if z.zabbixHost == "" || z.zabbixPort == "" || z.host == "" {
 		log.Fatal("zabbix settings is incorrect. You must specify ",
@@ -151,7 +142,11 @@ func Init(params map[string]string, templateVars map[string]string) {
 	}
 }
 
+func RegisterPrometheusCollector(collector prometheus.Collector) {
+
+}
+
 func init() {
 	z = new(zabbix)
-	output.RegisterOutput("zabbix", Send, Init)
+	output.RegisterOutput("zabbix", Send, Init, RegisterPrometheusCollector)
 }

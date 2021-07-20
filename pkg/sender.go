@@ -2,6 +2,8 @@ package pkg
 
 import (
 	"fmt"
+	"github.com/blackbass1988/access_logs_stats/pkg/template"
+	"github.com/prometheus/client_golang/prometheus"
 	"sort"
 	"strconv"
 	"strings"
@@ -34,6 +36,9 @@ type Sender struct {
 	//вывод происходит по схеме - кол-во в 1 секунду
 	counts map[string]map[string]uint64
 
+	prometheusHistograms       map[string]*prometheus.HistogramVec
+	prometheusLabelsTemplates  map[string]*template.Template
+
 	globalLock sync.Mutex
 }
 
@@ -45,35 +50,65 @@ func (s *Sender) resetData() {
 	s.globalLock.Unlock()
 }
 
-func (s *Sender) appendIfOk(row *RowEntry) (err error) {
+func (s *Sender) renderPrometheusLabels(row *RowEntry) map[string]string {
+	tempVars := make(map[string]string, len(row.Fields)+len(s.config.TemplateVars))
+	for k, v := range s.config.TemplateVars {
+		tempVars[k] = v
+	}
+	for k, v := range row.Fields {
+		tempVars[k] = v
+	}
 
-	if s.filter.MatchString(row.Raw) {
+	labels := make(map[string]string, len(s.prometheusLabelsTemplates))
+	for k, tmpl := range s.prometheusLabelsTemplates {
+		labels[k] = tmpl.ProcessTemplate(tempVars)
+	}
 
-		for field, val := range row.Fields {
+	return labels
+}
 
-			if _, ok := s.config.Aggregates[field]; ok {
-				valFloat, err := strconv.ParseFloat(val, 10)
-				checkOrFail(err)
-				s.floatsForAggregates[field] = append(s.floatsForAggregates[field], valFloat)
+func (s *Sender) appendIfOk(row *RowEntry) {
+
+	if !s.filter.MatchString(row.Raw) {
+		return
+	}
+	prometheusLabels := s.renderPrometheusLabels(row)
+	for field, val := range row.Fields {
+
+		if _, ok := s.config.Aggregates[field]; ok {
+			valFloat, err := strconv.ParseFloat(val, 10)
+			checkOrFail(err)
+			s.floatsForAggregates[field] = append(s.floatsForAggregates[field], valFloat)
+		}
+
+		//в конфиге указано поле, как поле, по которому считаются
+		// суммы по уникальным значениям
+		if _, ok := s.config.Counts[field]; ok {
+			if s.counts[field] == nil {
+				s.counts[field] = make(map[string]uint64)
 			}
+			s.counts[field][val]++
+		}
 
-			//в конфиге указано поле, как поле, по которому считаются
-			// суммы по уникальным значениям
-			if _, ok := s.config.Counts[field]; ok {
-				if s.counts[field] == nil {
-					s.counts[field] = make(map[string]uint64)
-				}
-				s.counts[field][val]++
-			}
+		if _, ok := s.prometheusHistograms[field]; ok {
+			valFloat, err := strconv.ParseFloat(val, 10)
+			checkOrFail(err)
+
+			// Добавляем в прометей метрики сейчас - потому что не хочется писать логику
+			// сохранения значений с учетом лейблов (тогда придется аккуратно хэшировать)
+			// проще переиспользовать логику из прометея с HistogramVec
+			s.prometheusHistograms[field].With(prometheusLabels).Observe(valFloat)
 		}
 	}
 
-	return err
+	return
 }
 
 func (s *Sender) sendStats() (err error) {
 
 	s.globalLock.Lock()
+	defer s.globalLock.Unlock()
+
 	for _, metricsOfField := range s.filter.Items {
 
 		for _, metric := range metricsOfField.Metrics {
@@ -81,7 +116,6 @@ func (s *Sender) sendStats() (err error) {
 		}
 	}
 	s.output.Send()
-	s.globalLock.Unlock()
 
 	return err
 }
@@ -100,6 +134,29 @@ func NewSender(filter *Filter, config *Config) (*Sender, error) {
 
 	for _, s := range config.Outputs {
 		sender.output.Init(s.Type, s.Settings, config.TemplateVars)
+	}
+
+	sender.prometheusHistograms = map[string]*prometheus.HistogramVec{}
+	sender.prometheusLabelsTemplates = map[string]*template.Template{}
+	for k, v := range filter.PrometheusLabels {
+		sender.prometheusLabelsTemplates[k] = template.NewTemplate(v)
+	}
+
+	keys := make([]string, 0, len(filter.PrometheusLabels))
+	for k := range filter.PrometheusLabels {
+		keys = append(keys, k)
+	}
+
+	for _, item := range filter.Items {
+		for _, metric := range item.Metrics {
+			if metric == "prometheus_histogram" {
+				sender.prometheusHistograms[item.Field] = prometheus.NewHistogramVec(prometheus.HistogramOpts{
+					Name: filter.Prefix + item.Field,
+					Help: filter.Prefix + item.Field + " autogen help (by access_logs_stats)",
+				}, keys)
+				sender.output.RegisterPrometheus(sender.prometheusHistograms[item.Field])
+			}
+		}
 	}
 
 	return sender, nil
@@ -147,6 +204,8 @@ func (s *Sender) appendToOutput(field string, metric string) {
 		value = s.processCps(metric, field)
 	case strings.Contains(metric, "percentage_"):
 		value = s.processPercentage(metric, field)
+	default:
+		return
 	}
 	s.output.AddMessage(field, metric, value)
 }

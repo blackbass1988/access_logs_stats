@@ -13,11 +13,39 @@
       "items": [
         {
           "field": "code",
-          "metrics": ["cps_200", "cps_400", "cps_500", "percentage_200"]
+          "metrics": [
+            "cps_200",
+            "cps_400",
+            "cps_500",
+            "percentage_200"
+          ]
         },
         {
           "field": "time",
-          "metrics": ["avg", "cent_90", "min", "max"]
+          "metrics": [
+            "avg",
+            "cent_90",
+            "min",
+            "max"
+          ]
+        }
+      ]
+    },
+    {
+      "filter": "/api/v1/",
+      "prefix": "nginx_requests_",
+      "prometheus_labels": {
+        "code": "${code}",
+        "path": "/api/v1/",
+        "hostname": "${hostname}",
+        "filename": "${filename}"
+      },
+      "items": [
+        {
+          "field": "time",
+          "metrics": [
+            "prometheus_histogram"
+          ]
         }
       ]
     }
@@ -36,6 +64,12 @@
         "zabbix_port": "1234",
         "host": "${host}",
         "template": "${metric}[${hostname},${field}]"
+      }
+    },
+    {
+      "type": "prometheus",
+      "settings": {
+        "addr": ":9000"
       }
     }
   ]

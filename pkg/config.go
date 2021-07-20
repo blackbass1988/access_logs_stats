@@ -6,6 +6,7 @@ import (
 	"github.com/blackbass1988/access_logs_stats/pkg/template"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
+	"log"
 	"os"
 	"strings"
 	"time"
@@ -17,10 +18,9 @@ type Config struct {
 
 	ExitAfterOneTick bool
 
-	Counts           map[string]bool
-	PrometheusValues map[string]bool
-	Aggregates       map[string]bool
-	TemplateVars     map[string]string
+	Counts       map[string]bool
+	Aggregates   map[string]bool
+	TemplateVars map[string]string
 
 	Outputs []*outputConfig
 	Rex     re.RegExp
@@ -87,17 +87,9 @@ func NewConfig(filepath string, externalTemplateVarsMap map[string]string) (*Con
 		}
 	}
 
-	err, tmpl := template.NewTempate(configStruct.InputDsn)
+	tmpl := template.NewTemplate(configStruct.InputDsn)
 
-	if err != nil {
-		return config, err
-	}
-
-	err, config.InputDsn = tmpl.ProcessTemplate(config.TemplateVars)
-
-	if err != nil {
-		return config, err
-	}
+	config.InputDsn = tmpl.ProcessTemplate(config.TemplateVars)
 
 	config.Period, err = time.ParseDuration(configStruct.Period)
 	if err != nil {
@@ -140,6 +132,11 @@ func processFilters(filters []*Filter, config *Config) []*Filter {
 					config.Aggregates[filterItem.Field] = true
 				case metric == "uniq", metric == "uniq_ps", strings.Contains(metric, "cps_"), strings.Contains(metric, "percentage_"):
 					config.Counts[filterItem.Field] = true
+				case metric == "prometheus_histogram":
+					// nope
+				default:
+					log.Fatalf("unknown mentric type %s \n", metric)
+
 				}
 			}
 		}

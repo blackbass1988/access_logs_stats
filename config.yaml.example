@@ -6,26 +6,40 @@ regexp: HTTP/\d.?\d?\s(?P<code>\d+)[^"]+"[^"]*" "[^"]*" (?P<time>\d{1,}\.\d{3})
 #comments allowed here
 period: 10s
 filters:
-- filter: ".+"
-  prefix: prefix2_
-  items:
-  - field: code
-    metrics:
-    - cps_200
-    - cps_400
-    - cps_500
-    - percentage_200
-  - field: time
-    metrics:
-    - avg
-    - cent_90
-    - min
-    - max
+  - filter: ".+"
+    prefix: prefix2_
+    items:
+      - field: code
+        metrics:
+          - cps_200
+          - cps_400
+          - cps_500
+          - percentage_200
+      - field: time
+        metrics:
+          - avg
+          - cent_90
+          - min
+          - max
+  - filter: "/api/v1/"
+    prefix: "nginx_requests_"
+    prometheus_labels:
+      code: "${code}"
+      path: "/api/v1/"
+      hostname: "${hostname}"
+      filename: "${filename}"
+    items:
+      - field: "time"
+        metrics:
+          - "prometheus_histogram"
 output:
-- type: console
-  settings: {}
-- type: zabbix
-  settings:
-    zabbix_host: 127.0.0.1
-    zabbix_port: '1234'
-    host: "${host}"
+  - type: console
+    settings: { }
+  - type: zabbix
+    settings:
+      zabbix_host: 127.0.0.1
+      zabbix_port: '1234'
+      host: "${host}"
+  - type: prometheus
+    settings:
+      addr: ":9000"

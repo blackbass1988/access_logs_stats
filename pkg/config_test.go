@@ -59,9 +59,9 @@ func testConfig(t *testing.T, config *pkg.Config) {
 		)
 	}
 
-	if len(config.Outputs) != 2 {
+	if len(config.Outputs) != 3 {
 		t.Error(
-			"expected 2 senders",
+			"expected 3 senders",
 			"actual ",
 			len(config.Outputs),
 		)
@@ -79,37 +79,60 @@ func testConfig(t *testing.T, config *pkg.Config) {
 
 	}
 
-	if len(config.Filters) != 1 {
-		t.Error("filters count expected 1 but was ", len(config.Filters))
+	if len(config.Filters) != 2 {
+		t.Error("filters count expected 2 but was ", len(config.Filters))
 		t.FailNow()
 	}
 
-	f := config.Filters[0]
-
-	checkFilter(t, f)
+	checkFirstFilter(t, config.Filters)
 	checkConfig(t, config)
 }
 
-func checkFilter(t *testing.T, f *pkg.Filter) {
-	if f.String() != ".+" {
-		t.Errorf("filter. Expected [.+] . Actual [%s]", f.String())
+func checkFirstFilter(t *testing.T, f []*pkg.Filter) {
+	if f[0].String() != ".+" {
+		t.Errorf("filter. Expected [.+] . Actual [%s]", f[0].String())
 	}
 
-	if f.Prefix != "prefix2_" {
-		t.Error("filter Prefix. Expected prefix2_ . Actual ", f.Prefix)
+	if f[0].Prefix != "prefix2_" {
+		t.Error("filter Prefix. Expected prefix2_ . Actual ", f[0].Prefix)
 	}
 
-	if len(f.Items) != 2 {
-		t.Error("filter Items. Expected 2. Actual ", len(f.Items))
+	if len(f[0].Items) != 2 {
+		t.Error("filter Items. Expected 2. Actual ", len(f[0].Items))
 	}
 
-	oneItem := f.Items[0]
+	oneItem := f[0].Items[0]
 	if oneItem.Field != "code" {
 		t.Error("first filter item must be code but was ", oneItem.Field)
 	}
 
 	if len(oneItem.Metrics) != 4 {
 		t.Error("len(oneItem.Metrics) must be 3 but was ", len(oneItem.Metrics))
+	}
+}
+func checkSecondFilter(t *testing.T, f []*pkg.Filter) {
+	if f[1].String() != "/api/v1/" {
+		t.Errorf("filter. Expected [/api/v1/] . Actual [%s]", f[1].String())
+	}
+
+	if f[1].Prefix != "nginx_requests_" {
+		t.Error("filter Prefix. Expected nginx_requests_ . Actual ", f[1].Prefix)
+	}
+
+	if len(f[1].Items) != 1 {
+		t.Error("filter Items. Expected 1. Actual ", len(f[1].Items))
+	}
+
+	firstItem := f[1].Items[0]
+	if firstItem.Field != "time" {
+		t.Error("first filter item must be code but was ", firstItem.Field)
+	}
+
+	if len(firstItem.Metrics) != 1 {
+		t.Error("len(firstItem.Metrics) must be 1 but was ", len(firstItem.Metrics))
+	}
+	if firstItem.Metrics[0] != "prometheus_histogram" {
+		t.Error("len(firstItem.Metrics) must be prometheus_histogram but was ", firstItem.Metrics[0])
 	}
 }
 
@@ -124,7 +147,7 @@ func checkConfig(t *testing.T, config *pkg.Config) {
 	}
 
 	if len(config.Aggregates) != 1 {
-		t.Error("config.Counts. Expected 1. Actual ", len(config.Aggregates))
+		t.Error("config.Aggregates. Expected 1. Actual ", len(config.Aggregates))
 	}
 
 	if _, ok := config.Aggregates["time"]; !ok {

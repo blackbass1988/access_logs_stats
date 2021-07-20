@@ -10,12 +10,14 @@ import (
 
 	"github.com/blackbass1988/access_logs_stats/pkg"
 	_ "github.com/blackbass1988/access_logs_stats/pkg/output/console"
+	_ "github.com/blackbass1988/access_logs_stats/pkg/output/prometheus"
+	_ "github.com/blackbass1988/access_logs_stats/pkg/output/prometheus_push"
 	_ "github.com/blackbass1988/access_logs_stats/pkg/output/zabbix"
 	prof "github.com/blackbass1988/yet_another_pprof_wrapper"
 )
 
 var (
-	version   = "0.10.0"
+	version   = "0.11.0"
 	buildTime = "unknown"
 	commit    = "unknown"
 	branch    = "unknown"

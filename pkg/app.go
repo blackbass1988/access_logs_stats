@@ -41,17 +41,9 @@ type App struct {
 func NewApp(config *Config) (app *App, err error) {
 	app = new(App)
 
-	err, tmpl := template.NewTempate(config.InputDsn)
+	tmpl := template.NewTemplate(config.InputDsn)
 
-	if err != nil {
-		return nil, err
-	}
-
-	err, config.InputDsn = tmpl.ProcessTemplate(config.TemplateVars)
-
-	if err != nil {
-		return nil, err
-	}
+	config.InputDsn = tmpl.ProcessTemplate(config.TemplateVars)
 
 	app.config = config
 	return app, err
