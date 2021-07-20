@@ -33,7 +33,7 @@ func TestJsonConfig(t *testing.T) {
 
 }
 
-func testConfig(t *testing.T, config pkg.Config) {
+func testConfig(t *testing.T, config *pkg.Config) {
 
 	if config.InputDsn != "file:foo.txt" {
 		t.Error(
@@ -113,18 +113,14 @@ func checkFilter(t *testing.T, f *pkg.Filter) {
 	}
 }
 
-func checkConfig(t *testing.T, config pkg.Config) {
+func checkConfig(t *testing.T, config *pkg.Config) {
 
-	if len(config.Counts) != 2 {
+	if len(config.Counts) != 1 {
 		t.Error("config.Counts. Expected 2. Actual ", len(config.Counts))
 	}
 
 	if _, ok := config.Counts["code"]; !ok {
-		t.Error("config.Aggregates[code]. Expected code. Actual ", config.Counts["code"])
-	}
-
-	if _, ok := config.Counts["time"]; !ok {
-		t.Error("config.Aggregates[time]. Expected time. Actual ", config.Counts["time"])
+		t.Error("config.Counts[code]. Expected code. Actual ", config.Counts["code"])
 	}
 
 	if len(config.Aggregates) != 1 {

@@ -2,8 +2,6 @@
   "input": "file:${filename}",
   "regexp": "HTTP\/\\d.?\\d?\\s(?P<code>\\d+)[^\"]+\"[^\"]*\" \"[^\"]*\" (?P<time>\\d{1,}\\.\\d{3})",
   "period": "10s",
-  "counts": ["code", "time"],
-  "aggregates": ["time"],
   "template_vars": {
     "filename": "foo.txt",
     "hostname": "localhost"
