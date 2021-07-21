@@ -12,7 +12,7 @@ type Template struct {
 }
 
 // Create string from template with input parameters
-func (t *Template) ProcessTemplate(tempVars map[string]string) (error, string) {
+func (t *Template) ProcessTemplate(tempVars map[string]string) string {
 	finalString := t.template
 
 	for k, v := range tempVars {
@@ -21,11 +21,11 @@ func (t *Template) ProcessTemplate(tempVars map[string]string) (error, string) {
 		finalString = strings.ReplaceAll(finalString, replaceString, v)
 	}
 
-	return nil, finalString
+	return finalString
 }
 
 // Create string from template with input parameters
-func (t *Template) Process(field string, metric string, templateVars map[string]string) (error, string) {
+func (t *Template) Process(field string, metric string, templateVars map[string]string) string {
 
 	tempVars := make(map[string]string)
 
@@ -42,11 +42,11 @@ func (t *Template) Process(field string, metric string, templateVars map[string]
 	return t.ProcessTemplate(tempVars)
 }
 
-func NewTempate(templateString string) (error, *Template) {
+func NewTemplate(templateString string) *Template {
 
 	t := new(Template)
 
 	t.template = templateString
 
-	return nil, t
+	return t
 }

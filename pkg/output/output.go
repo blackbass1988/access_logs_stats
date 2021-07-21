@@ -1,13 +1,16 @@
 package output
 
+import "github.com/prometheus/client_golang/prometheus"
+
 // default template if template for output not set
 const DefaultTemplate = "${field}.${metric}"
 
 type output struct {
-	name    string
-	send    func([]*Message)
-	init    func(map[string]string, map[string]string)
-	enabled bool
+	name               string
+	send               func([]*Message)
+	init               func(map[string]string, map[string]string)
+	registerPrometheus func(collector prometheus.Collector)
+	enabled            bool
 }
 
 var outputs = []output{}
@@ -20,9 +23,8 @@ type Message struct {
 }
 
 //RegisterOutput registers new output
-func RegisterOutput(name string, send func(messages []*Message), init func(params map[string]string, templateVars map[string]string)) error {
-	outputs = append(outputs, output{name, send, init, false})
-	return nil
+func RegisterOutput(name string, send func(messages []*Message), init func(params map[string]string, templateVars map[string]string), registerPrometheus func(collector prometheus.Collector)) {
+	outputs = append(outputs, output{name: name, send: send, init: init, enabled: false, registerPrometheus: registerPrometheus})
 }
 
 //Output is base struct of log target
@@ -69,6 +71,14 @@ func (s *Output) Init(senderName string, params map[string]string, templateVars 
 			outputs[i].enabled = true
 			aOutput.init(params, templateVars)
 			break
+		}
+	}
+}
+
+func (s *Output) RegisterPrometheus(collector prometheus.Collector) {
+	for _, aOutput := range outputs {
+		if aOutput.enabled {
+			aOutput.registerPrometheus(collector)
 		}
 	}
 }

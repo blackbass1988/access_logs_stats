@@ -28,7 +28,7 @@ type RowEntry struct {
 type App struct {
 	fi     os.FileInfo
 	file   *os.File
-	config Config
+	config *Config
 	buffer []byte
 
 	senderCollection *SenderCollection
@@ -38,20 +38,12 @@ type App struct {
 }
 
 //NewApp creates new parser
-func NewApp(config Config) (app *App, err error) {
+func NewApp(config *Config) (app *App, err error) {
 	app = new(App)
 
-	err, tmpl := template.NewTempate(config.InputDsn)
+	tmpl := template.NewTemplate(config.InputDsn)
 
-	if err != nil {
-		return nil, err
-	}
-
-	err, config.InputDsn = tmpl.ProcessTemplate(config.TemplateVars)
-
-	if err != nil {
-		return nil, err
-	}
+	config.InputDsn = tmpl.ProcessTemplate(config.TemplateVars)
 
 	app.config = config
 	return app, err
@@ -122,7 +114,7 @@ func (a *App) stop() {
 
 func (a *App) init() {
 	a.buffer = []byte{}
-	a.senderCollection = NewSenderCollection(&a.config)
+	a.senderCollection = NewSenderCollection(a.config)
 }
 
 func (a *App) appendLine(linesChannel <-chan string) {

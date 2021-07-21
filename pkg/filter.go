@@ -10,9 +10,10 @@ var regularExpressionRex = re.MustCompile(`[\[\]{}+*\\()]`)
 
 //Filter matching input string
 type Filter struct {
-	Matcher *matcher `json:"filter" yaml:"filter"`
-	Prefix  string   `json:"prefix" yaml:"prefix"`
-	Items   []struct {
+	Matcher          *matcher          `json:"filter" yaml:"filter"`
+	Prefix           string            `json:"prefix" yaml:"prefix"`
+	PrometheusLabels map[string]string `json:"prometheus_labels" yaml:"prometheus_labels"`
+	Items            []struct {
 		Field   string   `json:"field" yaml:"field"`
 		Metrics []string `json:"metrics" yaml:"metrics"`
 	} `json:"items" yaml:"items"`

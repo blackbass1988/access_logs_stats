@@ -10,13 +10,9 @@ func TestGoodTemplate(t *testing.T) {
 	metric := "cps_200"
 	expectedString := "count.cps_200"
 
-	err, tmpl := template.NewTempate("${field}.${metric}")
-	if err != nil {
-		t.Errorf("Error must be nil, was: [%s]", err.Error())
-		t.FailNow()
-	}
+	tmpl := template.NewTemplate("${field}.${metric}")
 
-	err, actualString := tmpl.Process(field, metric, nil)
+	actualString := tmpl.Process(field, metric, nil)
 
 	if expectedString != actualString {
 		t.Errorf("String must be >>%s<<, was: >>%s<<", expectedString, actualString)
@@ -30,12 +26,9 @@ func TestWithTemplateVars(t *testing.T) {
 	templateVars := make(map[string]string)
 	templateVars["hostname"] = "localhost"
 
-	err, tmpl := template.NewTempate("${metric}[${hostname},${field}]")
-	if err != nil {
-		t.Errorf("Error must be nil, [%s] was", err)
-	}
+	tmpl := template.NewTemplate("${metric}[${hostname},${field}]")
 
-	err, actualString := tmpl.Process(field, metric, templateVars)
+	actualString := tmpl.Process(field, metric, templateVars)
 
 	if expectedString != actualString {
 		t.Errorf("String must be [%s], [%s] was", expectedString, actualString)
